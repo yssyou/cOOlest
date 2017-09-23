@@ -212,7 +212,12 @@ ListFragment.OnFragmentInteractionListener {
     }
 
 
-    public void setUpLayout(){ }
+    public void setUpLayout(){
+
+        String user = "Rayku";
+
+
+    }
 
     public ArrayList<Song> getSongList() {
 
