@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity
         implements SongFragment.OnFragmentInteractionListener,
-ListFragment.OnFragmentInteractionListener {
+ListFragment.OnFragmentInteractionListener{
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -114,7 +114,7 @@ ListFragment.OnFragmentInteractionListener {
             }
 
             if(event.equals("killSeekBarTask")){
-                seekBarTask.cancel(true);
+                //seekBarTask.cancel(true);
             }
 
             if(event.equals("lostAudioFocus")){
@@ -133,9 +133,6 @@ ListFragment.OnFragmentInteractionListener {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        //setUpLayout();
-        //getSongList();
-
         queue = new ArrayBlockingQueue<>(6);
         mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
 
@@ -144,11 +141,12 @@ ListFragment.OnFragmentInteractionListener {
 
         mMediaBrowserCompat.connect();
 
-
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) { }
+
+
 
     public static class PlaceholderFragment extends Fragment {
 
@@ -211,14 +209,6 @@ ListFragment.OnFragmentInteractionListener {
         }
     }
 
-
-    public void setUpLayout(){
-
-        String user = "Rayku";
-
-
-    }
-
     public ArrayList<Song> getSongList() {
 
         arrayList = new ArrayList<>();
@@ -254,8 +244,6 @@ ListFragment.OnFragmentInteractionListener {
 
     }
 
-    /*
-
     public void playSong(int i){
         Song currentSong = arrayList.get(i);
         long currentId = currentSong.getId();
@@ -264,11 +252,27 @@ ListFragment.OnFragmentInteractionListener {
                 currentId);
         tpControls.playFromUri(trackUri, null);
 
-        refreshSeekBarTask(currentSong.getDuration(), 0);
+        //refreshSeekBarTask(currentSong.getDuration(), 0);
 
         tpControls.play();
-        updateInterface(i);
+        playingSongIndex = i;
 
+    }
+
+    public int getCurrentState(){
+        return mCurrentState;
+    }
+
+    public void playPause(View view){
+        if( mCurrentState == STATE_PAUSED ) {
+            mCurrentState = STATE_PLAYING;
+            tpControls.play();
+
+        } else {
+            mCurrentState = STATE_PAUSED;
+            tpControls.pause();
+
+        }
     }
 
     public void playPrevSong(View view){
@@ -281,50 +285,8 @@ ListFragment.OnFragmentInteractionListener {
         playSong(++playingSongIndex);
     }
 
-    public void updateInterface(int i) {
 
-        playingSongIndex = i;
-        Song currentSong = arrayList.get(i);
-
-        playingSongTitle.setText(currentSong.getTitle());
-        playingSongArtist.setText(currentSong.getArtist());
-
-        songSongTitle.setText(currentSong.getTitle());
-        songSongArtist.setText(currentSong.getArtist());
-
-        listPlayBtn.setBackgroundResource(R.drawable.pause);
-        playBtn.setBackgroundResource(R.drawable.pause);
-
-        animateTextToLeft(playingSongTitle, 480, 20000);
-        animateTextToLeft(songSongTitle, 480, 20000);
-    }
-
-    public void playPause(View view){
-        if( mCurrentState == STATE_PAUSED ) {
-            mCurrentState = STATE_PLAYING;
-            tpControls.play();
-
-            listPlayBtn.setBackgroundResource(R.drawable.pause);
-            playBtn.setBackgroundResource(R.drawable.pause);
-
-            refreshSeekBarTask(arrayList.get(playingSongIndex).getDuration()
-                    ,seekBar.getProgress());
-
-            refreshColorTask();
-
-        } else {
-            //if( MediaControllerCompat.getMediaController(MainActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
-            tpControls.pause();
-            //}
-            mCurrentState = STATE_PAUSED;
-
-            listPlayBtn.setBackgroundResource(R.drawable.play);
-            playBtn.setBackgroundResource(R.drawable.play);
-
-            colorTask4.killLightColorTask();
-        }
-    }
-
+    /*
     public void animateTextToLeft(final TextView textView, int translation, int duration){
 
         // got this time through a basic Rule of Three

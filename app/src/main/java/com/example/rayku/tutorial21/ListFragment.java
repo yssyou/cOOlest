@@ -21,7 +21,7 @@ import android.widget.TextView;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment implements View.OnClickListener{
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -32,11 +32,15 @@ public class ListFragment extends Fragment {
 
     View rootView;
 
-    View listPlayBtn, playingSongTitle, playingSongArtist;
+    View listPlayBtn;
+    TextView playingSongTitle, playingSongArtist;
 
     ArrayList<Song> arrayList;
 
-    ActivityCompat mainActivity;
+    Activity mainActivity;
+
+    private static final int STATE_PAUSED = 0;
+    private static final int STATE_PLAYING = 1;
 
     public ListFragment() { }
 
@@ -56,6 +60,9 @@ public class ListFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        mainActivity = getActivity();
+
     }
 
     @Override
@@ -97,20 +104,22 @@ public class ListFragment extends Fragment {
         mListener = null;
     }
 
-    public void setUpLayout() {
+    private void setUpLayout() {
         rootView = getView();
         if(rootView != null) {
             listPlayBtn = rootView.findViewById(R.id.listPlayBtn);
             playingSongTitle = rootView.findViewById(R.id.playing_song_title);
             playingSongArtist = rootView.findViewById(R.id.playing_song_artist);
+            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+            playingSongTitle.setTypeface(typeFace);
+            playingSongArtist.setTypeface(typeFace);
+
+            listPlayBtn.setOnClickListener(this);
         }
     }
 
     public void getSongList() {
-        Activity act = getActivity();
-        if (act instanceof MainActivity){
-            arrayList = ((MainActivity) act).getSongList();
-        }
+        arrayList = ((MainActivity) mainActivity).getSongList();
         ListView listView = rootView.findViewById(R.id.listView);
         SongAdapter adapter = new SongAdapter(getContext(), arrayList);
         listView.setAdapter(adapter);
@@ -118,10 +127,36 @@ public class ListFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //playSong(i);
+                ((MainActivity) mainActivity).playSong(i);
+                updateInterface(i);
             }
         });
     }
+
+    public void updateInterface(int i){
+        Song currentSong = arrayList.get(i);
+        playingSongTitle.setText(currentSong.getTitle());
+        playingSongArtist.setText(currentSong.getArtist());
+        listPlayBtn.setBackgroundResource(R.drawable.pause);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.listPlayBtn:
+                ((MainActivity)mainActivity).playPause(null);
+                if( ((MainActivity)mainActivity).getCurrentState() == STATE_PLAYING ) {
+                    listPlayBtn.setBackgroundResource(R.drawable.pause);
+                } else {
+                    listPlayBtn.setBackgroundResource(R.drawable.play);
+                }
+                break;
+        }
+    }
+
+
+
+
 
 
     public interface OnFragmentInteractionListener {
