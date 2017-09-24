@@ -17,14 +17,12 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View rootView;
-
-    View playBtn, prevBtn, nextBtn;
+    View rootView, playBtn, prevBtn, nextBtn;
     TextView songSongTitle, songSongArtist;
 
     SeekBar seekBar;
-    ThreadPoolExecutor threadPoolExecutor;
     SeekBarTask seekBarTask;
+    ThreadPoolExecutor threadPoolExecutor;
 
     public SongFragment() { }
 
@@ -63,32 +61,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         threadPoolExecutor = mListener.getThreadPoolExecutor();
     }
 
-    public void refreshSeekBarTask(int max, int progress){
-        killSeekBarTask();
-
-        seekBar.setMax(max);
-        if(progress != -1) {
-            seekBar.setProgress(progress);
-        }
-        seekBarTask = new SeekBarTask();
-        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
-    }
-
-    public void killSeekBarTask(){
-        if(seekBarTask != null) {
-            seekBarTask.cancel(true);
-        }
-    }
-
-    interface OnFragmentInteractionListener {
-        void changeFromSeekBar(int i);
-        void playPrev(View view);
-        void playNext(View view);
-        int getCurrentState();
-        void playPause(View view);
-        ThreadPoolExecutor getThreadPoolExecutor();
-    }
-
     public void setUpLayout() {
         rootView = getView();
         if(rootView != null) {
@@ -103,7 +75,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             songSongArtist = rootView.findViewById(R.id.song_song_artist);
             Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
             songSongTitle.setTypeface(typeFace);
-            songSongTitle.setTypeface(typeFace);
+            songSongArtist.setTypeface(typeFace);
 
             seekBar = rootView.findViewById(R.id.seekBar);
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -126,24 +98,52 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    public void updateInterface(Song currentSong){
+        songSongTitle.setText(currentSong.getTitle());
+        songSongArtist.setText(currentSong.getArtist());
+
+        songSongTitle.setSelected(true);
+    }
+
+    interface OnFragmentInteractionListener {
+        void changeFromSeekBar(int i);
+        void playPrev(View view);
+        void playNext(View view);
+        int getCurrentState();
+        void playPause(View view);
+        ThreadPoolExecutor getThreadPoolExecutor();
+    }
+
+    public void refreshSeekBarTask(int max, int progress){
+        killSeekBarTask();
+
+        seekBar.setMax(max);
+        if(progress != -1) {
+            seekBar.setProgress(progress);
+        }
+        seekBarTask = new SeekBarTask();
+        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
+    }
+    public void killSeekBarTask(){
+        if(seekBarTask != null) {
+            seekBarTask.cancel(true);
+        }
+    }
+
+    public void updateBtnOnPlay(){ playBtn.setBackgroundResource(R.drawable.pause); }
+    public void updateBtnOnPause(){ playBtn.setBackgroundResource(R.drawable.play); }
+
     @Override
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.playBtn:
                 mListener.playPause(null);
-                if( mListener.getCurrentState() == 1 ) {
-                    playBtn.setBackgroundResource(R.drawable.pause);
-                } else {
-                    playBtn.setBackgroundResource(R.drawable.play);
-                }
                 break;
             case R.id.prevBtn:
                 mListener.playPrev(null);
-                playBtn.setBackgroundResource(R.drawable.pause);
                 break;
             case R.id.nextBtn:
                 mListener.playNext(null);
-                playBtn.setBackgroundResource(R.drawable.pause);
                 break;
         }
     }

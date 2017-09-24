@@ -54,6 +54,9 @@ ListFragment.OnFragmentInteractionListener{
     ThreadPoolExecutor mThreadPoolExecutor;
     ColorTask4 colorTask4;
 
+    private ListFragment listFragment;
+    private SongFragment songFragment;
+
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
@@ -83,10 +86,14 @@ ListFragment.OnFragmentInteractionListener{
             switch( state.getState() ) {
                 case PlaybackStateCompat.STATE_PLAYING: {
                     mCurrentState = STATE_PLAYING;
+                    if(listFragment != null){ listFragment.updateBtnOnPlay(); }
+                    if(songFragment != null){ songFragment.updateBtnOnPlay(); }
                     break;
                 }
                 case PlaybackStateCompat.STATE_PAUSED: {
                     mCurrentState = STATE_PAUSED;
+                    if(listFragment != null){ listFragment.updateBtnOnPause(); }
+                    if(songFragment != null){ songFragment.updateBtnOnPause(); }
                     break;
                 }
 
@@ -97,13 +104,9 @@ ListFragment.OnFragmentInteractionListener{
         public void onSessionEvent(String event, Bundle extras) {
             super.onSessionEvent(event, extras);
 
-            if(event.equals("playPrevSong")){
-                playPrev(null);
-            }
+            if(event.equals("playPrevSong")){ playPrev(null); }
 
-            if(event.equals("playNextSong")){
-                playNext(null);
-            }
+            if(event.equals("playNextSong")){ playNext(null); }
 
             if(event.equals("killSeekBarTask")){
                 if(songFragment != null){
@@ -111,9 +114,7 @@ ListFragment.OnFragmentInteractionListener{
                 }
             }
 
-            if(event.equals("lostAudioFocus")){
-                playPause(null);
-            }
+            if(event.equals("lostAudioFocus")){ playPause(null); }
 
         }
     };
@@ -204,9 +205,6 @@ ListFragment.OnFragmentInteractionListener{
         }
     }
 
-    private ListFragment listFragment;
-    private SongFragment songFragment;
-
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -239,6 +237,7 @@ ListFragment.OnFragmentInteractionListener{
 
     @Override
     public void playSong(int i){
+        currentIndex = i;
         Song currentSong = arrayList.get(i);
         long currentId = currentSong.getId();
         Uri trackUri = ContentUris.withAppendedId(
@@ -246,27 +245,26 @@ ListFragment.OnFragmentInteractionListener{
                 currentId);
         tpControls.playFromUri(trackUri, null);
         tpControls.play();
-        currentIndex = i;
 
-        if(songFragment != null){
+        if(listFragment != null) {
+            listFragment.updateInterface(currentSong);
+        }
+        if(songFragment != null) {
+            songFragment.updateInterface(currentSong);
             songFragment.refreshSeekBarTask(currentSong.getDuration(), 0);
         }
-
     }
 
     @Override
-    public void changeFromSeekBar(int i) {
-        tpControls.seekTo(i);
+    public void playPrev(View view){
+        if(currentIndex <1) currentIndex = arrayList.size();
+        playSong(--currentIndex);
     }
 
     @Override
-    public int getCurrentState(){
-        return mCurrentState;
-    }
-
-    @Override
-    public ThreadPoolExecutor getThreadPoolExecutor() {
-        return mThreadPoolExecutor;
+    public void playNext(View view){
+        if(currentIndex ==arrayList.size()-1) currentIndex = -1;
+        playSong(++currentIndex);
     }
 
     @Override
@@ -281,18 +279,6 @@ ListFragment.OnFragmentInteractionListener{
             mCurrentState = STATE_PAUSED;
             tpControls.pause();
         }
-    }
-
-    @Override
-    public void playPrev(View view){
-        if(currentIndex <1) currentIndex = arrayList.size();
-        playSong(--currentIndex);
-    }
-
-    @Override
-    public void playNext(View view){
-        if(currentIndex ==arrayList.size()-1) currentIndex = -1;
-        playSong(++currentIndex);
     }
 
     public void animateTextToLeft(final TextView textView, int translation, int duration){
@@ -327,6 +313,21 @@ ListFragment.OnFragmentInteractionListener{
     }
 
     @Override
+    public ThreadPoolExecutor getThreadPoolExecutor() {
+        return mThreadPoolExecutor;
+    }
+
+    @Override
+    public void changeFromSeekBar(int i) {
+        tpControls.seekTo(i);
+    }
+
+    @Override
+    public int getCurrentState(){
+        return mCurrentState;
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         //colorTask4.killLightColorTask();
@@ -352,7 +353,6 @@ ListFragment.OnFragmentInteractionListener{
         }
 
         mMediaBrowserCompat.disconnect();
-
         mThreadPoolExecutor.shutdown();
     }
 

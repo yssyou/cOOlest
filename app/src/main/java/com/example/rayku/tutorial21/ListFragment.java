@@ -27,11 +27,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     public ListFragment() { }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_list, container, false);
         return rootView;
@@ -61,13 +56,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         getSongList();
     }
 
-    interface OnFragmentInteractionListener {
-        ArrayList<Song> getSongList();
-        void playSong(int i);
-        int getCurrentState();
-        void playPause(View view);
-    }
-
     private void setUpLayout() {
         rootView = getView();
         if(rootView != null) {
@@ -83,38 +71,38 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     }
 
     public void getSongList() {
-        arrayList = mListener.getSongList();
         ListView listView = rootView.findViewById(R.id.listView);
-        SongAdapter adapter = new SongAdapter(getContext(), arrayList);
+        SongAdapter adapter = new SongAdapter(getContext(), mListener.getSongList());
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                 mListener.playSong(i);
-                updateInterface(i);
             }
         });
     }
 
-    public void updateInterface(int i){
-        Song currentSong = arrayList.get(i);
+    public void updateInterface(Song currentSong){
         playingSongTitle.setText(currentSong.getTitle());
         playingSongArtist.setText(currentSong.getArtist());
-        listPlayBtn.setBackgroundResource(R.drawable.pause);
+        playingSongTitle.setSelected(true);
     }
+
+    interface OnFragmentInteractionListener {
+        ArrayList<Song> getSongList();
+        void playSong(int i);
+        void playPause(View view);
+    }
+
+    public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }
+    public void updateBtnOnPause(){ listPlayBtn.setBackgroundResource(R.drawable.play); }
 
     @Override
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.listPlayBtn:
                 mListener.playPause(null);
-                if(mListener.getCurrentState() == 1) {
-                    listPlayBtn.setBackgroundResource(R.drawable.pause);
-                } else {
-                    listPlayBtn.setBackgroundResource(R.drawable.play);
-                }
                 break;
         }
     }
