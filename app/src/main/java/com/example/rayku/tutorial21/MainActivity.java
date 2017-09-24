@@ -105,6 +105,12 @@ ListFragment.OnFragmentInteractionListener{
                 playNext(null);
             }
 
+            if(event.equals("killSeekBarTask")){
+                if(songFragment != null){
+                    songFragment.killSeekBarTask();
+                }
+            }
+
             if(event.equals("lostAudioFocus")){
                 playPause(null);
             }
@@ -217,9 +223,7 @@ ListFragment.OnFragmentInteractionListener{
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-
             Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
-
             switch(position){
                 case 0:
                     listFragment = (ListFragment) createdFragment;

@@ -64,15 +64,20 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     }
 
     public void refreshSeekBarTask(int max, int progress){
-        if(seekBarTask != null) {
-            seekBarTask.cancel(true);
-        }
+        killSeekBarTask();
+
         seekBar.setMax(max);
         if(progress != -1) {
             seekBar.setProgress(progress);
         }
         seekBarTask = new SeekBarTask();
         seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
+    }
+
+    public void killSeekBarTask(){
+        if(seekBarTask != null) {
+            seekBarTask.cancel(true);
+        }
     }
 
     interface OnFragmentInteractionListener {
