@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.MediaStore;
@@ -24,9 +23,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -51,16 +47,12 @@ ListFragment.OnFragmentInteractionListener{
     private MediaControllerCompat.TransportControls tpControls;
 
     ArrayList<Song> arrayList = new ArrayList<>();
-    SeekBar seekBar;
 
     int playingSongIndex;
 
     ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor mThreadPoolExecutor;
-    SeekBarTask seekBarTask;
     ColorTask4 colorTask4;
-
-    TextView playingSongTitle, playingSongArtist, songSongTitle, songSongArtist;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -106,19 +98,19 @@ ListFragment.OnFragmentInteractionListener{
             super.onSessionEvent(event, extras);
 
             if(event.equals("playPrevSong")){
-                //playPrevSong(null);
+                playPrevSong(null);
             }
 
             if(event.equals("playNextSong")){
-                //playNextSong(null);
+                playNextSong(null);
             }
 
-            if(event.equals("killSeekBarTask")){
+            if(event.equals("killSeekBarTask")){ // ESTO TENGO QUE CHECKEARLO MI N
                 //seekBarTask.cancel(true);
             }
 
             if(event.equals("lostAudioFocus")){
-                //playPause(null);
+                playPause(null);
             }
 
         }
@@ -140,13 +132,41 @@ ListFragment.OnFragmentInteractionListener{
                 mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
 
         mMediaBrowserCompat.connect();
-
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) { }
+    public ArrayList<Song> getSongList() {
+        arrayList = new ArrayList<>();
 
+        ContentResolver contentResolver = getContentResolver();
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+
+            int title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+
+            do {
+
+                String currentTitle = cursor.getString(title);
+                String currentArtist = cursor.getString(artist);
+                long currentId = cursor.getLong(id);
+                String currentMimeType = cursor.getString(mimeType);
+                int currentDuration = (int)cursor.getLong(duration);
+
+                if (currentMimeType.equals("audio/mpeg")) {
+                    arrayList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
+                }
+            } while (cursor.moveToNext());
+        }
+
+        return arrayList;
+    }
 
     public static class PlaceholderFragment extends Fragment {
 
@@ -157,6 +177,8 @@ ListFragment.OnFragmentInteractionListener{
         public static Fragment newInstance(int sectionNumber) {
 
             Fragment fragment = null;
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
 
             switch (sectionNumber){
                 case 1:
@@ -166,10 +188,6 @@ ListFragment.OnFragmentInteractionListener{
                     fragment = new SongFragment();
                     break;
             }
-
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-
             return fragment;
         }
 
@@ -209,41 +227,7 @@ ListFragment.OnFragmentInteractionListener{
         }
     }
 
-    public ArrayList<Song> getSongList() {
-
-        arrayList = new ArrayList<>();
-
-        ContentResolver contentResolver = getContentResolver();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        Cursor cursor = contentResolver.query(uri, null, null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-
-            int title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int id = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int mimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
-            int duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-
-            do {
-
-                String currentTitle = cursor.getString(title);
-                String currentArtist = cursor.getString(artist);
-                long currentId = cursor.getLong(id);
-                String currentMimeType = cursor.getString(mimeType);
-                int currentDuration = (int)cursor.getLong(duration);
-
-                if (currentMimeType.equals("audio/mpeg")) {
-                    arrayList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
-                }
-            } while (cursor.moveToNext());
-        }
-
-        return arrayList;
-
-    }
-
+    @Override
     public void playSong(int i){
         Song currentSong = arrayList.get(i);
         long currentId = currentSong.getId();
@@ -252,6 +236,7 @@ ListFragment.OnFragmentInteractionListener{
                 currentId);
         tpControls.playFromUri(trackUri, null);
 
+
         //refreshSeekBarTask(currentSong.getDuration(), 0);
 
         tpControls.play();
@@ -259,10 +244,26 @@ ListFragment.OnFragmentInteractionListener{
 
     }
 
+    @Override
+    public void changeFromSeekBar(int i) {
+        tpControls.seekTo(i);
+    }
+
+    @Override
+    public Song getCurrentSong() {
+        return arrayList.get(playingSongIndex);
+    }
+
+    @Override
     public int getCurrentState(){
         return mCurrentState;
     }
 
+    public ThreadPoolExecutor getThreadPoolExecutor(){
+        return mThreadPoolExecutor;
+    }
+
+    @Override
     public void playPause(View view){
         if( mCurrentState == STATE_PAUSED ) {
             mCurrentState = STATE_PLAYING;
@@ -285,8 +286,6 @@ ListFragment.OnFragmentInteractionListener{
         playSong(++playingSongIndex);
     }
 
-
-    /*
     public void animateTextToLeft(final TextView textView, int translation, int duration){
 
         // got this time through a basic Rule of Three
@@ -321,26 +320,13 @@ ListFragment.OnFragmentInteractionListener{
     @Override
     protected void onPause() {
         super.onPause();
-        colorTask4.killLightColorTask();
+        //colorTask4.killLightColorTask();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-
-
-        refreshColorTask();
-    }
-
-    public void refreshSeekBarTask(int max, int progress){
-        if(seekBarTask != null) {
-            seekBarTask.cancel(true);
-        }
-        seekBar.setMax(max);
-        seekBar.setProgress(progress);
-        seekBarTask = new SeekBarTask();
-        seekBarTask.executeOnExecutor(mThreadPoolExecutor, seekBar);
+        //refreshColorTask();
     }
 
     public void refreshColorTask(){
@@ -352,18 +338,15 @@ ListFragment.OnFragmentInteractionListener{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if( MediaControllerCompat.getMediaController(MainActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+        if (MediaControllerCompat.getMediaController(MainActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
             MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().pause();
         }
 
         mMediaBrowserCompat.disconnect();
 
-        seekBarTask.cancel(true);
+        //seekBarTask.cancel(true);
         mThreadPoolExecutor.shutdown();
     }
-*/
-
-
 
 
 }

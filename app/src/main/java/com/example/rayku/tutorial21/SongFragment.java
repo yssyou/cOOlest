@@ -1,7 +1,8 @@
 package com.example.rayku.tutorial21;
 
+import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,55 +10,37 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
-public class SongFragment extends Fragment {
+import java.util.concurrent.ThreadPoolExecutor;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    private String mParam1, mParam2;
+public class SongFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View playBtn, songSongTitle, songSongArtist;
+    View rootView;
+    Activity mainActivity;
+
+    View playBtn, prevBtn, nextBtn;
+    TextView songSongTitle, songSongArtist;
+
     SeekBar seekBar;
+    ThreadPoolExecutor threadPoolExecutor;
+    SeekBarTask seekBarTask;
 
     public SongFragment() { }
-
-    public static SongFragment newInstance(String param1, String param2) {
-        SongFragment fragment = new SongFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        mainActivity = getActivity();
+        threadPoolExecutor = ((MainActivity)mainActivity).getThreadPoolExecutor();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_song, container, false);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setUpLayout();
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+        rootView = inflater.inflate(R.layout.fragment_song, container, false);
+        return rootView;
     }
 
     @Override
@@ -77,17 +60,39 @@ public class SongFragment extends Fragment {
         mListener = null;
     }
 
-    public void setUpLayout() {
-        View view = getView();
-        if(view != null) {
-            playBtn = view.findViewById(R.id.playBtn);
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setUpLayout();
+    }
 
-            seekBar = view.findViewById(R.id.seekBar);
+    interface OnFragmentInteractionListener {
+        void changeFromSeekBar(int i);
+        Song getCurrentSong();
+    }
+
+    public void setUpLayout() {
+        rootView = getView();
+        if(rootView != null) {
+            playBtn = rootView.findViewById(R.id.playBtn);
+            prevBtn = rootView.findViewById(R.id.prevBtn);
+            nextBtn = rootView.findViewById(R.id.nextBtn);
+            playBtn.setOnClickListener(this);
+            prevBtn.setOnClickListener(this);
+            nextBtn.setOnClickListener(this);
+
+            songSongTitle = rootView.findViewById(R.id.song_song_title);
+            songSongArtist = rootView.findViewById(R.id.song_song_artist);
+            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+            songSongTitle.setTypeface(typeFace);
+            songSongTitle.setTypeface(typeFace);
+
+            seekBar = rootView.findViewById(R.id.seekBar);
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
                     if(fromUser){
-                        //tpControls.seekTo(i);
+                        mListener.changeFromSeekBar(i);
                         seekBar.setProgress(i);
                     }
                 }
@@ -96,20 +101,46 @@ public class SongFragment extends Fragment {
                 }
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    //tpControls.seekTo(seekBar.getProgress());
+                    mListener.changeFromSeekBar(seekBar.getProgress());
                     seekBar.setProgress(seekBar.getProgress());
                 }
             });
 
-            songSongTitle = view.findViewById(R.id.song_song_title);
-            songSongArtist = view.findViewById(R.id.song_song_artist);
+
         }
     }
 
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.playBtn:
+                ((MainActivity)mainActivity).playPause(null);
+                if( ((MainActivity)mainActivity).getCurrentState() == 1 ) {
+                    playBtn.setBackgroundResource(R.drawable.pause);
+                } else {
+                    playBtn.setBackgroundResource(R.drawable.play);
+                }
+                break;
+            case R.id.prevBtn:
+                ((MainActivity)mainActivity).playPrevSong(null);
+                playBtn.setBackgroundResource(R.drawable.pause);
+                break;
+            case R.id.nextBtn:
+                ((MainActivity)mainActivity).playNextSong(null);
+                playBtn.setBackgroundResource(R.drawable.pause);
+                break;
+        }
     }
 
+    public void refreshSeekBarTask(int max, int progress){
+        if(seekBarTask != null) {
+            seekBarTask.cancel(true);
+        }
+        seekBar.setMax(max);
+        seekBar.setProgress(progress);
+        seekBarTask = new SeekBarTask();
+        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
+    }
 
 
 }
