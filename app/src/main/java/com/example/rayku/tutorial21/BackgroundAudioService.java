@@ -67,8 +67,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
                 mMediaPlayer.pause();
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
                 showPausedNotification();
-
-                mMediaSessionCompat.sendSessionEvent("killSeekBarTask", null);
             }
         }
 

@@ -1,6 +1,5 @@
 package com.example.rayku.tutorial21;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     private OnFragmentInteractionListener mListener;
 
     View rootView;
-    Activity mainActivity;
 
     View playBtn, prevBtn, nextBtn;
     TextView songSongTitle, songSongArtist;
@@ -33,8 +31,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mainActivity = getActivity();
-        threadPoolExecutor = ((MainActivity)mainActivity).getThreadPoolExecutor();
     }
 
     @Override
@@ -64,11 +60,28 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setUpLayout();
+        threadPoolExecutor = mListener.getThreadPoolExecutor();
+    }
+
+    public void refreshSeekBarTask(int max, int progress){
+        if(seekBarTask != null) {
+            seekBarTask.cancel(true);
+        }
+        seekBar.setMax(max);
+        if(progress != -1) {
+            seekBar.setProgress(progress);
+        }
+        seekBarTask = new SeekBarTask();
+        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
     }
 
     interface OnFragmentInteractionListener {
         void changeFromSeekBar(int i);
-        Song getCurrentSong();
+        void playPrev(View view);
+        void playNext(View view);
+        int getCurrentState();
+        void playPause(View view);
+        ThreadPoolExecutor getThreadPoolExecutor();
     }
 
     public void setUpLayout() {
@@ -105,8 +118,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                     seekBar.setProgress(seekBar.getProgress());
                 }
             });
-
-
         }
     }
 
@@ -114,33 +125,22 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.playBtn:
-                ((MainActivity)mainActivity).playPause(null);
-                if( ((MainActivity)mainActivity).getCurrentState() == 1 ) {
+                mListener.playPause(null);
+                if( mListener.getCurrentState() == 1 ) {
                     playBtn.setBackgroundResource(R.drawable.pause);
                 } else {
                     playBtn.setBackgroundResource(R.drawable.play);
                 }
                 break;
             case R.id.prevBtn:
-                ((MainActivity)mainActivity).playPrevSong(null);
+                mListener.playPrev(null);
                 playBtn.setBackgroundResource(R.drawable.pause);
                 break;
             case R.id.nextBtn:
-                ((MainActivity)mainActivity).playNextSong(null);
+                mListener.playNext(null);
                 playBtn.setBackgroundResource(R.drawable.pause);
                 break;
         }
     }
-
-    public void refreshSeekBarTask(int max, int progress){
-        if(seekBarTask != null) {
-            seekBarTask.cancel(true);
-        }
-        seekBar.setMax(max);
-        seekBar.setProgress(progress);
-        seekBarTask = new SeekBarTask();
-        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
-    }
-
 
 }
