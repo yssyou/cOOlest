@@ -69,7 +69,6 @@ ListFragment.OnFragmentInteractionListener{
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
 
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
-                //tpControls.playFromMediaId(String.valueOf(R.raw.warner_tautz_off_broadway), null);
 
             } catch( RemoteException e ) { e.printStackTrace(); }
         }
@@ -199,8 +198,6 @@ ListFragment.OnFragmentInteractionListener{
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
     }
@@ -348,9 +345,6 @@ ListFragment.OnFragmentInteractionListener{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (MediaControllerCompat.getMediaController(MainActivity.this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
-            MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls().pause();
-        }
 
         mMediaBrowserCompat.disconnect();
         mThreadPoolExecutor.shutdown();

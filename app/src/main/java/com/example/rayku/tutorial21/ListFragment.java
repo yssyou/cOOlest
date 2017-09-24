@@ -22,8 +22,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     View listPlayBtn;
     TextView playingSongTitle, playingSongArtist;
 
-    ArrayList<Song> arrayList;
-
     public ListFragment() { }
 
     @Override

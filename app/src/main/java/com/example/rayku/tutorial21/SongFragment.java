@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SongFragment extends Fragment implements View.OnClickListener {
