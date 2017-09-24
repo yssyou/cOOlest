@@ -4,8 +4,7 @@
     android:layout_height="60dp"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <ImageView android:id="@+id/imageView"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_column="0"
@@ -13,8 +12,7 @@
         android:layout_row="0"
         android:layout_rowSpan="4" />
 
-    <TextView
-        android:id="@+id/song_title"
+    <TextView android:id="@+id/song_title"
         android:layout_width="270dp"
         android:layout_height="wrap_content"
         android:layout_column="5"
@@ -23,8 +21,7 @@
         android:textSize="20sp"
         android:textStyle="bold"/>
 
-    <TextView
-        android:id="@+id/song_artist"
+    <TextView android:id="@+id/song_artist"
         android:layout_width="270dp"
         android:layout_height="wrap_content"
         android:layout_column="5"

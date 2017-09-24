@@ -5,8 +5,7 @@
              android:layout_height="match_parent"
              tools:context="com.example.rayku.tutorial21.SongFragment">
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/songLayout"
+    <android.support.constraint.ConstraintLayout android:id="@+id/songLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -18,8 +17,7 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintTop_creator="1">
 
-        <SeekBar
-            android:id="@+id/seekBar"
+        <SeekBar android:id="@+id/seekBar"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
@@ -30,8 +28,7 @@
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintRight_creator="1"/>
 
-        <GridLayout
-            android:id="@+id/songGridLayout"
+        <GridLayout android:id="@+id/songGridLayout"
             android:layout_width="wrap_content"
             android:layout_height="100dp"
             android:layout_marginBottom="40dp"
@@ -55,8 +52,7 @@
                 android:textSize="32sp"
                 android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/song_song_artist"
+            <TextView android:id="@+id/song_song_artist"
                 android:layout_width="320dp"
                 android:layout_height="wrap_content"
                 android:layout_column="0"
@@ -68,8 +64,7 @@
 
         </GridLayout>
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
+        <LinearLayout android:id="@+id/linearLayout"
             android:layout_width="320dp"
             android:layout_height="100dp"
             android:layout_marginBottom="-68dp"
@@ -83,39 +78,34 @@
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintRight_creator="1">
 
-            <Button
-                android:id="@+id/loopBtn"
+            <Button android:id="@+id/loopBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/loop"/>
 
-            <Button
-                android:id="@+id/prevBtn"
+            <Button android:id="@+id/prevBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/prev"
                 android:onClick="playPrevSong"/>
 
-            <Button
-                android:id="@+id/playBtn"
+            <Button android:id="@+id/playBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/play"
                 android:onClick="playPause"/>
 
-            <Button
-                android:id="@+id/nextBtn"
+            <Button android:id="@+id/nextBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/next"
                 android:onClick="playNextSong"/>
 
-            <Button
-                android:id="@+id/randBtn"
+            <Button android:id="@+id/randBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
