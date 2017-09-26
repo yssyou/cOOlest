@@ -30,13 +30,13 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity
-        implements SongFragment.OnFragmentInteractionListener,
-ListFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements
+        SettingsFragment.OnFragmentInteractionListener,
+        ListFragment.OnFragmentInteractionListener,
+SongFragment.OnFragmentInteractionListener {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
-
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
@@ -54,9 +54,10 @@ ListFragment.OnFragmentInteractionListener{
     ThreadPoolExecutor mThreadPoolExecutor;
     ColorTask4 colorTask4;
 
+    private SettingsFragment settingsFragment;
     private ListFragment listFragment;
     private SongFragment songFragment;
-
+    
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
@@ -79,20 +80,28 @@ ListFragment.OnFragmentInteractionListener{
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             super.onPlaybackStateChanged(state);
-            if( state == null ) {
+            if (state == null) {
                 return;
             }
-            switch( state.getState() ) {
+            switch (state.getState()) {
                 case PlaybackStateCompat.STATE_PLAYING: {
                     mCurrentState = STATE_PLAYING;
-                    if(listFragment != null){ listFragment.updateBtnOnPlay(); }
-                    if(songFragment != null){ songFragment.updateBtnOnPlay(); }
+                    if (listFragment != null) {
+                        listFragment.updateBtnOnPlay();
+                    }
+                    if (songFragment != null) {
+                        songFragment.updateBtnOnPlay();
+                    }
                     break;
                 }
                 case PlaybackStateCompat.STATE_PAUSED: {
                     mCurrentState = STATE_PAUSED;
-                    if(listFragment != null){ listFragment.updateBtnOnPause(); }
-                    if(songFragment != null){ songFragment.updateBtnOnPause(); }
+                    if (listFragment != null) {
+                        listFragment.updateBtnOnPause();
+                    }
+                    if (songFragment != null) {
+                        songFragment.updateBtnOnPause();
+                    }
                     break;
                 }
 
@@ -127,6 +136,7 @@ ListFragment.OnFragmentInteractionListener{
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setCurrentItem(1);
 
         queue = new ArrayBlockingQueue<>(6);
         mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
@@ -173,21 +183,20 @@ ListFragment.OnFragmentInteractionListener{
 
     public static class PlaceholderFragment extends Fragment {
 
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
         public PlaceholderFragment() { }
 
         public static Fragment newInstance(int sectionNumber) {
 
             Fragment fragment = null;
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
 
             switch (sectionNumber){
                 case 1:
-                    fragment = new ListFragment();
+                    fragment = new SettingsFragment();
                     break;
                 case 2:
+                    fragment = new ListFragment();
+                    break;
+                case 3:
                     fragment = new SongFragment();
                     break;
             }
@@ -197,33 +206,31 @@ ListFragment.OnFragmentInteractionListener{
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+        public SectionsPagerAdapter(FragmentManager fm) { super(fm); }
 
         @Override
-        public Fragment getItem(int position) {
-            return PlaceholderFragment.newInstance(position + 1);
-        }
+        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
 
         @Override
-        public int getCount() { return 2; }
+        public int getCount() { return 3; }
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
             switch(position){
                 case 0:
-                    listFragment = (ListFragment) createdFragment;
+                    settingsFragment = (SettingsFragment) createdFragment;
                     break;
                 case 1:
+                    listFragment = (ListFragment) createdFragment;
+                    break;
+                case 2:
                     songFragment = (SongFragment) createdFragment;
                     break;
             }
