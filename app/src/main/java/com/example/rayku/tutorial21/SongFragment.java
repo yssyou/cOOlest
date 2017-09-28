@@ -25,7 +25,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     SeekBarTask seekBarTask;
     ThreadPoolExecutor threadPoolExecutor;
 
-    public SongFragment() { }
+    public static final String TITLE = "REPRODUCCIÓN";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,10 +111,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         super.onResume();
         Song currentSong = mListener.getCurrentSong();
         updateInterface(currentSong);
-
         int aTime = (int)mListener.getaTime();
-
-        Toast.makeText(getActivity(), Integer.toString(aTime), Toast.LENGTH_SHORT).show();
 
         if (mListener.getCurrentState() == 1){
             refreshSeekBarTask(currentSong.getDuration(), aTime);

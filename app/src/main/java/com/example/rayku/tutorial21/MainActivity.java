@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.MediaStore;
+import android.support.design.widget.TabLayout;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -17,6 +18,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,6 +61,8 @@ SongFragment.OnFragmentInteractionListener {
     private ListFragment listFragment;
     private SongFragment songFragment;
 
+    private TabLayout mTabLayout;
+
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
@@ -70,6 +74,9 @@ SongFragment.OnFragmentInteractionListener {
 
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
+
+                tpControls.playFromMediaId(String.valueOf(R.raw.warner_tautz_off_broadway), null);
+
 
             } catch( RemoteException e ) { e.printStackTrace(); }
         }
@@ -139,6 +146,9 @@ SongFragment.OnFragmentInteractionListener {
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
+        mTabLayout = (TabLayout) findViewById(R.id.tab);
+        mTabLayout.setupWithViewPager(mViewPager);
+
         queue = new ArrayBlockingQueue<>(6);
         mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
 
@@ -146,40 +156,7 @@ SongFragment.OnFragmentInteractionListener {
                 mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
 
         mMediaBrowserCompat.connect();
-    }
 
-    @Override
-    public ArrayList<Song> getSongList() {
-        arrayList = new ArrayList<>();
-
-        ContentResolver contentResolver = getContentResolver();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        Cursor cursor = contentResolver.query(uri, null, null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-
-            int title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int id = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int mimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
-            int duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-
-            do {
-
-                String currentTitle = cursor.getString(title);
-                String currentArtist = cursor.getString(artist);
-                long currentId = cursor.getLong(id);
-                String currentMimeType = cursor.getString(mimeType);
-                int currentDuration = (int)cursor.getLong(duration);
-
-                if (currentMimeType.equals("audio/mpeg")) {
-                    arrayList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
-                }
-            } while (cursor.moveToNext());
-        }
-
-        return arrayList;
     }
 
     public static class PlaceholderFragment extends Fragment {
@@ -189,16 +166,20 @@ SongFragment.OnFragmentInteractionListener {
         public static Fragment newInstance(int sectionNumber) {
 
             Fragment fragment = null;
+            Bundle args = new Bundle();
 
             switch (sectionNumber){
                 case 1:
                     fragment = new SettingsFragment();
+                    fragment.setArguments(args);
                     break;
                 case 2:
                     fragment = new ListFragment();
+                    fragment.setArguments(args);
                     break;
                 case 3:
                     fragment = new SongFragment();
+                    fragment.setArguments(args);
                     break;
             }
             return fragment;
@@ -238,6 +219,57 @@ SongFragment.OnFragmentInteractionListener {
             return createdFragment;
 
         }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return SettingsFragment.TITLE;
+
+                case 1:
+                    return ListFragment.TITLE;
+
+                case 2:
+                    return SongFragment.TITLE;
+            }
+
+            return super.getPageTitle(position);
+
+        }
+    }
+
+    @Override
+    public ArrayList<Song> getSongList() {
+        arrayList = new ArrayList<>();
+
+        ContentResolver contentResolver = getContentResolver();
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+
+            int title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+
+            do {
+
+                String currentTitle = cursor.getString(title);
+                String currentArtist = cursor.getString(artist);
+                long currentId = cursor.getLong(id);
+                String currentMimeType = cursor.getString(mimeType);
+                int currentDuration = (int)cursor.getLong(duration);
+
+                if (currentMimeType.equals("audio/mpeg")) {
+                    arrayList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
+                }
+            } while (cursor.moveToNext());
+        }
+
+        return arrayList;
     }
 
     @Override

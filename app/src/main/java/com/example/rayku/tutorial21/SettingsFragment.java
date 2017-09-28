@@ -10,9 +10,9 @@ import android.view.ViewGroup;
 
 public class SettingsFragment extends Fragment {
 
-    private OnFragmentInteractionListener mListener;
+    public static final String TITLE = "OPCIONES";
 
-    public SettingsFragment() { }
+    private OnFragmentInteractionListener mListener;
 
     public static SettingsFragment newInstance(String param1, String param2) {
         SettingsFragment fragment = new SettingsFragment();

@@ -20,6 +20,7 @@
         <SeekBar android:id="@+id/seekBar"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
+            android:thumb="@color/colorAccent"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="@+id/songGridLayout"

@@ -22,6 +22,8 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     View listPlayBtn;
     TextView playingSongTitle, playingSongArtist;
 
+    public static final String TITLE = "CANCIONES";
+
     public ListFragment() { }
 
     @Override
@@ -58,6 +60,11 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     public void onResume() {
         super.onResume();
         updateInterface(mListener.getCurrentSong());
+        if (mListener.getCurrentState() == 1){
+            listPlayBtn.setBackgroundResource(R.drawable.pause);
+        }else{
+            listPlayBtn.setBackgroundResource(R.drawable.play);
+        }
     }
 
     private void setUpLayout() {
@@ -98,6 +105,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         void playSong(int i);
         void playPause(View view);
         Song getCurrentSong();
+        int getCurrentState();
     }
 
     public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }
