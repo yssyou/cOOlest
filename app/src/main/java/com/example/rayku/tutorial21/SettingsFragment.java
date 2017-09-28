@@ -14,13 +14,6 @@ public class SettingsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public static SettingsFragment newInstance(String param1, String param2) {
-        SettingsFragment fragment = new SettingsFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,5 +41,5 @@ public class SettingsFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener { }
+    interface OnFragmentInteractionListener { }
 }

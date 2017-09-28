@@ -56,17 +56,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         getSongList();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateInterface(mListener.getCurrentSong());
-        if (mListener.getCurrentState() == 1){
-            listPlayBtn.setBackgroundResource(R.drawable.pause);
-        }else{
-            listPlayBtn.setBackgroundResource(R.drawable.play);
-        }
-    }
-
     private void setUpLayout() {
         rootView = getView();
         if(rootView != null) {

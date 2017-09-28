@@ -3,7 +3,9 @@ package com.example.rayku.tutorial21;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.MediaStore;
@@ -12,19 +14,14 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -50,6 +47,7 @@ SongFragment.OnFragmentInteractionListener {
 
     ArrayList<Song> arrayList = new ArrayList<>();
 
+    static Song currentSong;
     int currentIndex;
     long playTime, prevTime;
 
@@ -136,29 +134,6 @@ SongFragment.OnFragmentInteractionListener {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setCurrentItem(1);
-
-        mTabLayout = (TabLayout) findViewById(R.id.tab);
-        mTabLayout.setupWithViewPager(mViewPager);
-
-        queue = new ArrayBlockingQueue<>(6);
-        mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
-
-        mMediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
-                mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
-
-        mMediaBrowserCompat.connect();
-
-    }
-
     public static class PlaceholderFragment extends Fragment {
 
         public PlaceholderFragment() { }
@@ -166,20 +141,16 @@ SongFragment.OnFragmentInteractionListener {
         public static Fragment newInstance(int sectionNumber) {
 
             Fragment fragment = null;
-            Bundle args = new Bundle();
 
             switch (sectionNumber){
                 case 1:
                     fragment = new SettingsFragment();
-                    fragment.setArguments(args);
                     break;
                 case 2:
                     fragment = new ListFragment();
-                    fragment.setArguments(args);
                     break;
                 case 3:
                     fragment = new SongFragment();
-                    fragment.setArguments(args);
                     break;
             }
             return fragment;
@@ -217,7 +188,6 @@ SongFragment.OnFragmentInteractionListener {
                     break;
             }
             return createdFragment;
-
         }
 
         @Override
@@ -239,7 +209,49 @@ SongFragment.OnFragmentInteractionListener {
     }
 
     @Override
-    public ArrayList<Song> getSongList() {
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        retrieveSongList();
+
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setCurrentItem(1);
+
+        mTabLayout = (TabLayout) findViewById(R.id.tab);
+        mTabLayout.setupWithViewPager(mViewPager);
+
+        queue = new ArrayBlockingQueue<>(6);
+        mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
+
+        mMediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
+                mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
+
+        mMediaBrowserCompat.connect();
+
+        customizeTabLayout();
+
+    }
+
+    private void customizeTabLayout() {
+        AssetManager assetManager = getAssets();
+        Typeface typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
+
+        ViewGroup vg = (ViewGroup) mTabLayout.getChildAt(0);
+        for (int j=0; j<vg.getChildCount(); j++) {
+            ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
+            for (int i = 0; i < vgTab.getChildCount(); i++) {
+                View tabViewChild = vgTab.getChildAt(i);
+                if (tabViewChild instanceof TextView) {
+                    ((TextView) tabViewChild).setTypeface(typeFace);
+                }
+            }
+        }
+    }
+
+    private void retrieveSongList(){
         arrayList = new ArrayList<>();
 
         ContentResolver contentResolver = getContentResolver();
@@ -269,13 +281,14 @@ SongFragment.OnFragmentInteractionListener {
             } while (cursor.moveToNext());
         }
 
-        return arrayList;
+        currentIndex = 0;
+        currentSong = arrayList.get(currentIndex);
     }
 
     @Override
     public void playSong(int i){
         currentIndex = i;
-        Song currentSong = arrayList.get(i);
+        currentSong  = arrayList.get(i);
         long currentId = currentSong.getId();
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -326,36 +339,10 @@ SongFragment.OnFragmentInteractionListener {
         }
     }
 
-    public void animateTextToLeft(final TextView textView, int translation, int duration){
+    public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
-        // got this time through a basic Rule of Three
-        int startAnimTime = (translation-20)*duration/translation;
-
-        TranslateAnimation startAnim = new TranslateAnimation(20, -translation, 0, 0);
-        startAnim.setRepeatCount(0);
-        startAnim.setStartOffset(1000);
-        startAnim.setInterpolator(new LinearInterpolator());
-        startAnim.setDuration(startAnimTime);
-        textView.setAnimation(startAnim);
-
-        final TranslateAnimation endlessAnim = new TranslateAnimation(translation, -translation, 0, 0);
-        endlessAnim.setRepeatCount(Animation.INFINITE);
-        endlessAnim.setInterpolator(new LinearInterpolator());
-        endlessAnim.setDuration(duration);
-
-        startAnim.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) { }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                textView.setAnimation(endlessAnim);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) { }
-        });
-    }
+    @Override
+    public ArrayList<Song> getSongList() { return arrayList; }
 
     @Override
     public ThreadPoolExecutor getThreadPoolExecutor() {
@@ -367,14 +354,12 @@ SongFragment.OnFragmentInteractionListener {
         tpControls.seekTo(i);
     }
 
-    public Song getCurrentSong(){ return arrayList.get(currentIndex); }
+    public Song getCurrentSong(){ return currentSong; }
     public int getCurrentState(){ return mCurrentState; }
-    public long getaTime() {
+    public long getCurrentTime() {
         if(mCurrentState == 1) return playTime += System.currentTimeMillis()-prevTime;
         else return playTime;
     }
-
-    public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
     @Override
     protected void onPause() {

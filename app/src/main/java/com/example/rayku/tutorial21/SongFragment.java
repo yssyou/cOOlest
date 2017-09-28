@@ -10,11 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SongFragment extends Fragment implements View.OnClickListener {
+
+    public static final String TITLE = "REPRODUCCIÓN";
 
     private OnFragmentInteractionListener mListener;
 
@@ -24,8 +25,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     SeekBar seekBar;
     SeekBarTask seekBarTask;
     ThreadPoolExecutor threadPoolExecutor;
-
-    public static final String TITLE = "REPRODUCCIÓN";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,6 +59,18 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         super.onActivityCreated(savedInstanceState);
         setUpLayout();
         threadPoolExecutor = mListener.getThreadPoolExecutor();
+    }
+
+    interface OnFragmentInteractionListener {
+        void changeFromSeekBar(int i);
+        void playPrev(View view);
+        void playNext(View view);
+        void playPause(View view);
+        ThreadPoolExecutor getThreadPoolExecutor();
+        int getCurrentState();
+        Song getCurrentSong();
+        long getCurrentTime();
+        void setTimeOnSeekBarChange(int i);
     }
 
     public void setUpLayout() {
@@ -111,7 +122,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         super.onResume();
         Song currentSong = mListener.getCurrentSong();
         updateInterface(currentSong);
-        int aTime = (int)mListener.getaTime();
+        int aTime = (int)mListener.getCurrentTime();
 
         if (mListener.getCurrentState() == 1){
             refreshSeekBarTask(currentSong.getDuration(), aTime);
@@ -121,18 +132,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             seekBar.setProgress(aTime);
             playBtn.setBackgroundResource(R.drawable.play);
         }
-    }
-
-    interface OnFragmentInteractionListener {
-        void changeFromSeekBar(int i);
-        void playPrev(View view);
-        void playNext(View view);
-        void playPause(View view);
-        ThreadPoolExecutor getThreadPoolExecutor();
-        int getCurrentState();
-        Song getCurrentSong();
-        long getaTime();
-        void setTimeOnSeekBarChange(int i);
     }
 
     public void refreshSeekBarTask(int max, int progress){
