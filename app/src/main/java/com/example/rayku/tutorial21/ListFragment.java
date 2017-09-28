@@ -54,6 +54,12 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         getSongList();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateInterface(mListener.getCurrentSong());
+    }
+
     private void setUpLayout() {
         rootView = getView();
         if(rootView != null) {
@@ -91,6 +97,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         ArrayList<Song> getSongList();
         void playSong(int i);
         void playPause(View view);
+        Song getCurrentSong();
     }
 
     public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }
@@ -99,7 +106,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.listPlayBtn:
+            case R.id.listPlayBtn: // este encapsulamiento permite oprimir el boton MUY RÁPIDAMENTE
                 mListener.playPause(null);
                 break;
         }

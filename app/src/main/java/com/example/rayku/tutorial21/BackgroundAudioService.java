@@ -148,7 +148,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
         }
     };
 
-
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
@@ -254,7 +253,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
 
     private void setMediaPlaybackState(int state){
         PlaybackStateCompat.Builder builder = new PlaybackStateCompat.Builder();
-
 
         if(state == PlaybackStateCompat.STATE_PLAYING){
             builder.setActions(

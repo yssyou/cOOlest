@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SongFragment extends Fragment implements View.OnClickListener {
@@ -83,6 +85,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                     if(fromUser){
                         mListener.changeFromSeekBar(i);
                         seekBar.setProgress(i);
+                        mListener.setTimeOnSeekBarChange(i);
                     }
                 }
                 @Override
@@ -100,17 +103,39 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void updateInterface(Song currentSong){
         songSongTitle.setText(currentSong.getTitle());
         songSongArtist.setText(currentSong.getArtist());
-
         songSongTitle.setSelected(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Song currentSong = mListener.getCurrentSong();
+        updateInterface(currentSong);
+
+        int aTime = (int)mListener.getaTime();
+
+        Toast.makeText(getActivity(), Integer.toString(aTime), Toast.LENGTH_SHORT).show();
+
+        if (mListener.getCurrentState() == 1){
+            refreshSeekBarTask(currentSong.getDuration(), aTime);
+            playBtn.setBackgroundResource(R.drawable.pause);
+        }else{
+            seekBar.setMax(currentSong.getDuration());
+            seekBar.setProgress(aTime);
+            playBtn.setBackgroundResource(R.drawable.play);
+        }
     }
 
     interface OnFragmentInteractionListener {
         void changeFromSeekBar(int i);
         void playPrev(View view);
         void playNext(View view);
-        int getCurrentState();
         void playPause(View view);
         ThreadPoolExecutor getThreadPoolExecutor();
+        int getCurrentState();
+        Song getCurrentSong();
+        long getaTime();
+        void setTimeOnSeekBarChange(int i);
     }
 
     public void refreshSeekBarTask(int max, int progress){

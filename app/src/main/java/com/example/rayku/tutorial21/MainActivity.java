@@ -49,6 +49,7 @@ SongFragment.OnFragmentInteractionListener {
     ArrayList<Song> arrayList = new ArrayList<>();
 
     int currentIndex;
+    long playTime, prevTime;
 
     ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor mThreadPoolExecutor;
@@ -57,7 +58,7 @@ SongFragment.OnFragmentInteractionListener {
     private SettingsFragment settingsFragment;
     private ListFragment listFragment;
     private SongFragment songFragment;
-    
+
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
@@ -68,7 +69,6 @@ SongFragment.OnFragmentInteractionListener {
                 mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
 
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
-
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
 
             } catch( RemoteException e ) { e.printStackTrace(); }
@@ -104,29 +104,30 @@ SongFragment.OnFragmentInteractionListener {
                     }
                     break;
                 }
-
             }
         }
 
         @Override
         public void onSessionEvent(String event, Bundle extras) {
             super.onSessionEvent(event, extras);
-
-            if(event.equals("playPrevSong")){ playPrev(null); }
-
-            if(event.equals("playNextSong")){ playNext(null); }
-
-            if(event.equals("killSeekBarTask")){
-                if(songFragment != null){
-                    songFragment.killSeekBarTask();
-                }
+            switch (event) {
+                case "playPrevSong":
+                    playPrev(null);
+                    break;
+                case "playNextSong":
+                    playNext(null);
+                    break;
+                case "killSeekBarTask":
+                    if (songFragment != null) {
+                        songFragment.killSeekBarTask();
+                    }
+                    break;
+                case "lostAudioFocus":
+                    playPause(null);
+                    break;
             }
-
-            if(event.equals("lostAudioFocus")){ playPause(null); }
-
         }
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,9 +211,9 @@ SongFragment.OnFragmentInteractionListener {
         }
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) { super(fm); }
+        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
 
         @Override
         public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
@@ -250,6 +251,9 @@ SongFragment.OnFragmentInteractionListener {
         tpControls.playFromUri(trackUri, null);
         tpControls.play();
 
+        prevTime = System.currentTimeMillis();
+        playTime = 0;
+
         if(listFragment != null) {
             listFragment.updateInterface(currentSong);
         }
@@ -276,12 +280,17 @@ SongFragment.OnFragmentInteractionListener {
         if( mCurrentState == STATE_PAUSED ) {
             mCurrentState = STATE_PLAYING;
             tpControls.play();
+
+            prevTime = System.currentTimeMillis();
+
             if(songFragment != null){
                 songFragment.refreshSeekBarTask(arrayList.get(currentIndex).getDuration(), -1);
             }
         } else {
             mCurrentState = STATE_PAUSED;
             tpControls.pause();
+
+            playTime += System.currentTimeMillis()-prevTime; // almacena tiempo transcurrido
         }
     }
 
@@ -326,10 +335,14 @@ SongFragment.OnFragmentInteractionListener {
         tpControls.seekTo(i);
     }
 
-    @Override
-    public int getCurrentState(){
-        return mCurrentState;
+    public Song getCurrentSong(){ return arrayList.get(currentIndex); }
+    public int getCurrentState(){ return mCurrentState; }
+    public long getaTime() {
+        if(mCurrentState == 1) return playTime += System.currentTimeMillis()-prevTime;
+        else return playTime;
     }
+
+    public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
     @Override
     protected void onPause() {
@@ -356,6 +369,5 @@ SongFragment.OnFragmentInteractionListener {
         mMediaBrowserCompat.disconnect();
         mThreadPoolExecutor.shutdown();
     }
-
 
 }
