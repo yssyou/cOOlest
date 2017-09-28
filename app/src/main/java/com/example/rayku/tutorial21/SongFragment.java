@@ -19,7 +19,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View rootView, playBtn, prevBtn, nextBtn;
+    View rootView, playBtn, prevBtn, nextBtn, loopBtn;
     TextView songSongTitle, songSongArtist;
 
     SeekBar seekBar;
@@ -71,6 +71,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         Song getCurrentSong();
         long getCurrentTime();
         void setTimeOnSeekBarChange(int i);
+        void loop();
+        int getCurrentLoop();
     }
 
     public void setUpLayout() {
@@ -79,9 +81,11 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             playBtn = rootView.findViewById(R.id.playBtn);
             prevBtn = rootView.findViewById(R.id.prevBtn);
             nextBtn = rootView.findViewById(R.id.nextBtn);
+            loopBtn = rootView.findViewById(R.id.loopBtn);
             playBtn.setOnClickListener(this);
             prevBtn.setOnClickListener(this);
             nextBtn.setOnClickListener(this);
+            loopBtn.setOnClickListener(this);
 
             songSongTitle = rootView.findViewById(R.id.song_song_title);
             songSongArtist = rootView.findViewById(R.id.song_song_artist);
@@ -132,6 +136,10 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             seekBar.setProgress(aTime);
             playBtn.setBackgroundResource(R.drawable.play);
         }
+
+        if (mListener.getCurrentLoop() == 1) loopBtn.setBackgroundResource(R.drawable.loop);
+        else loopBtn.setBackgroundResource(R.drawable.loop_faded);
+
     }
 
     public void refreshSeekBarTask(int max, int progress){
@@ -152,6 +160,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     public void updateBtnOnPlay(){ playBtn.setBackgroundResource(R.drawable.pause); }
     public void updateBtnOnPause(){ playBtn.setBackgroundResource(R.drawable.play); }
+    public void updateLoopOnIn(){ loopBtn.setBackgroundResource(R.drawable.loop); }
+    public void updateLoopOnOut(){ loopBtn.setBackgroundResource(R.drawable.loop_faded); }
 
     @Override
     public void onClick(View view) {
@@ -164,6 +174,9 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.nextBtn:
                 mListener.playNext(null);
+                break;
+            case R.id.loopBtn:
+                mListener.loop();
                 break;
         }
     }

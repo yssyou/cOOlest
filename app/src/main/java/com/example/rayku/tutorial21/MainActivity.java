@@ -40,7 +40,10 @@ SongFragment.OnFragmentInteractionListener {
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
 
-    private int mCurrentState;
+    private static final int NOT_LOOPING = 0;
+    private static final int LOOPING = 1;
+
+    private int mCurrentState, mCurrentLoop;
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat.TransportControls tpControls;
@@ -73,8 +76,18 @@ SongFragment.OnFragmentInteractionListener {
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
 
-                tpControls.playFromMediaId(String.valueOf(R.raw.warner_tautz_off_broadway), null);
+                //tpControls.playFromMediaId(String.valueOf(R.raw.warner_tautz_off_broadway), null);
+/*
+                long currentId = currentSong.getId();
+                Uri trackUri = ContentUris.withAppendedId(
+                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        currentId);
 
+                tpControls.playFromUri(trackUri, null);
+*/
+                playSong(0); // i had to put this here and i dont know why :S
+                playPause(null);
+                playPause(null);
 
             } catch( RemoteException e ) { e.printStackTrace(); }
         }
@@ -122,10 +135,15 @@ SongFragment.OnFragmentInteractionListener {
                 case "playNextSong":
                     playNext(null);
                     break;
+                case "songFinished":
+                    if(mCurrentLoop==LOOPING)
+                        playSong(currentIndex);
+                    else
+                        playNext(null);
+                    break;
                 case "killSeekBarTask":
-                    if (songFragment != null) {
+                    if(songFragment != null)
                         songFragment.killSeekBarTask();
-                    }
                     break;
                 case "lostAudioFocus":
                     playPause(null);
@@ -293,6 +311,7 @@ SongFragment.OnFragmentInteractionListener {
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currentId);
+
         tpControls.playFromUri(trackUri, null);
         tpControls.play();
 
@@ -339,6 +358,21 @@ SongFragment.OnFragmentInteractionListener {
         }
     }
 
+    @Override
+    public void loop(){
+        if(mCurrentLoop==LOOPING){
+            if(songFragment != null) {
+                songFragment.updateLoopOnOut();
+            }
+            mCurrentLoop = NOT_LOOPING;
+        }else{
+            if(songFragment != null) {
+                songFragment.updateLoopOnIn();
+            }
+            mCurrentLoop = LOOPING;
+        }
+    }
+
     public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
     @Override
@@ -360,6 +394,7 @@ SongFragment.OnFragmentInteractionListener {
         if(mCurrentState == 1) return playTime += System.currentTimeMillis()-prevTime;
         else return playTime;
     }
+    public int getCurrentLoop(){ return mCurrentLoop; }
 
     @Override
     protected void onPause() {
@@ -377,6 +412,11 @@ SongFragment.OnFragmentInteractionListener {
         if(colorTask4 !=null){ colorTask4.killLightColorTask(); }
         colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001,
                 findViewById(R.id.bg1), findViewById(R.id.bg2), findViewById(R.id.bg3), findViewById(R.id.bg4));
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     @Override

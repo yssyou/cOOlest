@@ -302,7 +302,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        mMediaSessionCompat.sendSessionEvent("playNextSong", null);
+        mMediaSessionCompat.sendSessionEvent("songFinished", null);
     }
 
     @Override

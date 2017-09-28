@@ -88,7 +88,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
-                android:background="@drawable/loop"/>
+                android:background="@drawable/loop_faded"/>
 
             <Button android:id="@+id/prevBtn"
                 android:layout_width="80dp"
