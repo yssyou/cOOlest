@@ -115,7 +115,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
-                android:background="@drawable/rand"/>
+                android:background="@drawable/rand_faded"/>
 
         </LinearLayout>
 

@@ -19,7 +19,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View rootView, playBtn, prevBtn, nextBtn, loopBtn;
+    View rootView, playBtn, prevBtn, nextBtn, loopBtn, randBtn;
     TextView songSongTitle, songSongArtist;
 
     SeekBar seekBar;
@@ -73,6 +73,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         void setTimeOnSeekBarChange(int i);
         void loop();
         int getCurrentLoop();
+        void rand();
+        int getCurrentRand();
     }
 
     public void setUpLayout() {
@@ -82,10 +84,12 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             prevBtn = rootView.findViewById(R.id.prevBtn);
             nextBtn = rootView.findViewById(R.id.nextBtn);
             loopBtn = rootView.findViewById(R.id.loopBtn);
+            randBtn = rootView.findViewById(R.id.randBtn);
             playBtn.setOnClickListener(this);
             prevBtn.setOnClickListener(this);
             nextBtn.setOnClickListener(this);
             loopBtn.setOnClickListener(this);
+            randBtn.setOnClickListener(this);
 
             songSongTitle = rootView.findViewById(R.id.song_song_title);
             songSongArtist = rootView.findViewById(R.id.song_song_artist);
@@ -140,6 +144,9 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         if (mListener.getCurrentLoop() == 1) loopBtn.setBackgroundResource(R.drawable.loop);
         else loopBtn.setBackgroundResource(R.drawable.loop_faded);
 
+        if (mListener.getCurrentRand() == 1) randBtn.setBackgroundResource(R.drawable.rand);
+        else randBtn.setBackgroundResource(R.drawable.rand_faded);
+
     }
 
     public void refreshSeekBarTask(int max, int progress){
@@ -162,6 +169,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void updateBtnOnPause(){ playBtn.setBackgroundResource(R.drawable.play); }
     public void updateLoopOnIn(){ loopBtn.setBackgroundResource(R.drawable.loop); }
     public void updateLoopOnOut(){ loopBtn.setBackgroundResource(R.drawable.loop_faded); }
+    public void updateRandOnIn(){ randBtn.setBackgroundResource(R.drawable.rand); }
+    public void updateRandOnOut(){ randBtn.setBackgroundResource(R.drawable.rand_faded); }
 
     @Override
     public void onClick(View view) {
@@ -177,6 +186,9 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.loopBtn:
                 mListener.loop();
+                break;
+            case R.id.randBtn:
+                mListener.rand();
                 break;
         }
     }

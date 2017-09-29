@@ -19,6 +19,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,11 +40,14 @@ SongFragment.OnFragmentInteractionListener {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
-
     private static final int NOT_LOOPING = 0;
     private static final int LOOPING = 1;
+    private static final int NOT_RAND = 0;
+    private static final int RAND = 1;
 
-    private int mCurrentState, mCurrentLoop;
+    private int mCurrentState, mCurrentLoop, mCurrentRand;
+
+    private boolean isColorActive;
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat.TransportControls tpControls;
@@ -76,17 +80,8 @@ SongFragment.OnFragmentInteractionListener {
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
 
-                //tpControls.playFromMediaId(String.valueOf(R.raw.warner_tautz_off_broadway), null);
-/*
-                long currentId = currentSong.getId();
-                Uri trackUri = ContentUris.withAppendedId(
-                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        currentId);
-
-                tpControls.playFromUri(trackUri, null);
-*/
                 playSong(0); // i had to put this here and i dont know why :S
-                playPause(null);
+                playPause(null); // also had to run this twice wtf
                 playPause(null);
 
             } catch( RemoteException e ) { e.printStackTrace(); }
@@ -251,6 +246,10 @@ SongFragment.OnFragmentInteractionListener {
 
         customizeTabLayout();
 
+        for(int i=0; i<100; i++) {
+            Log.i("OMFG", Integer.toString((int) (Math.random() * 5)));
+        }
+
     }
 
     private void customizeTabLayout() {
@@ -329,14 +328,18 @@ SongFragment.OnFragmentInteractionListener {
 
     @Override
     public void playPrev(View view){
-        if(currentIndex <1) currentIndex = arrayList.size();
-        playSong(--currentIndex);
+        if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
+        else if(currentIndex < 1) currentIndex = arrayList.size()-1;
+        else --currentIndex;
+        playSong(currentIndex);
     }
 
     @Override
     public void playNext(View view){
-        if(currentIndex ==arrayList.size()-1) currentIndex = -1;
-        playSong(++currentIndex);
+        if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
+        else if(currentIndex == arrayList.size()-1) currentIndex = 0;
+        else ++currentIndex;
+        playSong(currentIndex);
     }
 
     @Override
@@ -373,6 +376,21 @@ SongFragment.OnFragmentInteractionListener {
         }
     }
 
+    @Override
+    public void rand(){
+        if(mCurrentRand==RAND){
+            if(songFragment != null) {
+                songFragment.updateRandOnOut();
+            }
+            mCurrentRand = NOT_RAND;
+        }else{
+            if(songFragment != null) {
+                songFragment.updateRandOnIn();
+            }
+            mCurrentRand = RAND;
+        }
+    }
+
     public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
     @Override
@@ -395,6 +413,7 @@ SongFragment.OnFragmentInteractionListener {
         else return playTime;
     }
     public int getCurrentLoop(){ return mCurrentLoop; }
+    public int getCurrentRand(){ return mCurrentRand; }
 
     @Override
     protected void onPause() {
