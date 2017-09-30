@@ -16,9 +16,14 @@ class SongAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<Song> arrayList;
 
+    private AssetManager assetManager;
+    private Typeface typeFace;
+
     SongAdapter(Context context, ArrayList<Song> arrayList){
         this.context = context;
         this.arrayList = arrayList;
+        assetManager = context.getAssets();
+        typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
     }
 
     private class ViewHolder { // this is an amazing piece of code :D
@@ -42,13 +47,8 @@ class SongAdapter extends BaseAdapter {
             view = LayoutInflater.from(context).inflate(R.layout.song, viewGroup, false);
             viewHolder = new ViewHolder(view);
 
-            // could this be improved in Android O?
-            AssetManager assetManager = context.getAssets();
-            Typeface typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
             viewHolder.songTitle.setTypeface(typeFace);
             viewHolder.songArtist.setTypeface(typeFace);
-            //
-
 
             view.setTag(viewHolder);
         } else {
