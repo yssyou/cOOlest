@@ -39,7 +39,8 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity implements
         SettingsFragment.OnFragmentInteractionListener,
         ListFragment.OnFragmentInteractionListener,
-SongFragment.OnFragmentInteractionListener {
+SongFragment.OnFragmentInteractionListener,
+        MyListsFragment.OnFragmentInteractionListener {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -52,8 +53,6 @@ SongFragment.OnFragmentInteractionListener {
     private static final int RAND = 1;
 
     private int mCurrentState, mCurrentLoop, mCurrentRand;
-
-    private boolean isColorActive;
 
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat.TransportControls tpControls;
@@ -71,6 +70,7 @@ SongFragment.OnFragmentInteractionListener {
     private SettingsFragment settingsFragment;
     private ListFragment listFragment;
     private SongFragment songFragment;
+    private MyListsFragment albumsFragment;
 
     private TabLayout mTabLayout;
 
@@ -87,11 +87,6 @@ SongFragment.OnFragmentInteractionListener {
 
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
-
-                playSong(0); // i had to put this here and i dont know why :S
-                playPause(null); // also had to run this twice wtf
-                playPause(null);
-
             } catch( RemoteException e ) { e.printStackTrace(); }
         }
     };
@@ -153,6 +148,7 @@ SongFragment.OnFragmentInteractionListener {
                     break;
             }
         }
+
     };
 
     public static class PlaceholderFragment extends Fragment {
@@ -160,31 +156,22 @@ SongFragment.OnFragmentInteractionListener {
         public PlaceholderFragment() { }
 
         public static Fragment newInstance(int sectionNumber) {
-
-            Fragment fragment = null;
-
             switch (sectionNumber){
-                case 1:
-                    fragment = new SettingsFragment();
-                    break;
-                case 2:
-                    fragment = new ListFragment();
-                    break;
-                case 3:
-                    fragment = new SongFragment();
-                    break;
+                case 1: return new SettingsFragment();
+                case 2: return new ListFragment();
+                case 3: return new SongFragment();
+                case 4: return new MyListsFragment();
             }
-            return fragment;
+            return null;
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
 
-    class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         SectionsPagerAdapter(FragmentManager fm) { super(fm); }
 
@@ -192,7 +179,7 @@ SongFragment.OnFragmentInteractionListener {
         public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
 
         @Override
-        public int getCount() { return 3; }
+        public int getCount() { return 4; }
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
@@ -207,6 +194,9 @@ SongFragment.OnFragmentInteractionListener {
                 case 2:
                     songFragment = (SongFragment) createdFragment;
                     break;
+                case 3:
+                    albumsFragment = (MyListsFragment) createdFragment;
+                    break;
             }
             return createdFragment;
         }
@@ -214,18 +204,12 @@ SongFragment.OnFragmentInteractionListener {
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
-                    return SettingsFragment.TITLE;
-
-                case 1:
-                    return ListFragment.TITLE;
-
-                case 2:
-                    return SongFragment.TITLE;
+                case 0: return SettingsFragment.TITLE;
+                case 1: return ListFragment.TITLE;
+                case 2: return SongFragment.TITLE;
+                case 3: return MyListsFragment.TITLE;
             }
-
             return super.getPageTitle(position);
-
         }
     }
 
@@ -233,7 +217,7 @@ SongFragment.OnFragmentInteractionListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkPermission()) {
                 Log.e("permission", "Permission already granted.");
@@ -249,8 +233,10 @@ SongFragment.OnFragmentInteractionListener {
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
+
         mTabLayout = (TabLayout) findViewById(R.id.tab);
         mTabLayout.setupWithViewPager(mViewPager);
+        customizeTabLayout();
 
         queue = new ArrayBlockingQueue<>(6);
         mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
@@ -259,8 +245,6 @@ SongFragment.OnFragmentInteractionListener {
                 mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
 
         mMediaBrowserCompat.connect();
-
-        customizeTabLayout();
 
     }
 
@@ -421,7 +405,7 @@ SongFragment.OnFragmentInteractionListener {
     public Song getCurrentSong(){ return currentSong; }
     public int getCurrentState(){ return mCurrentState; }
     public long getCurrentTime() {
-        if(mCurrentState == 1) return playTime += System.currentTimeMillis()-prevTime;
+        if(mCurrentState == 1) return playTime+System.currentTimeMillis()-prevTime;
         else return playTime;
     }
     public int getCurrentLoop(){ return mCurrentLoop; }

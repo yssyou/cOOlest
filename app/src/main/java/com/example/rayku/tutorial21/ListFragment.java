@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 
 public class ListFragment extends Fragment implements View.OnClickListener{
@@ -22,15 +23,10 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     View listPlayBtn;
     TextView playingSongTitle, playingSongArtist;
 
+    ArrayList<Song> arrayList;
+    SongAdapter adapter;
+
     public static final String TITLE = "CANCIONES";
-
-    public ListFragment() { }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_list, container, false);
-        return rootView;
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -44,49 +40,57 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        arrayList = mListener.getSongList();
+        adapter = new SongAdapter(getContext(), arrayList);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.fragment_list, container, false);
+        return rootView;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setUpLayout();
-        getSongList();
+        updateInterface(mListener.getCurrentSong());
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     private void setUpLayout() {
-        rootView = getView();
-        if(rootView != null) {
-            listPlayBtn = rootView.findViewById(R.id.listPlayBtn);
-            playingSongTitle = rootView.findViewById(R.id.playing_song_title);
-            playingSongArtist = rootView.findViewById(R.id.playing_song_artist);
-            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
-            playingSongTitle.setTypeface(typeFace);
-            playingSongArtist.setTypeface(typeFace);
+        listPlayBtn = rootView.findViewById(R.id.listPlayBtn);
+        playingSongTitle = rootView.findViewById(R.id.playing_song_title);
+        playingSongArtist = rootView.findViewById(R.id.playing_song_artist);
+        Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+        playingSongTitle.setTypeface(typeFace);
+        playingSongArtist.setTypeface(typeFace);
+        listPlayBtn.setOnClickListener(this);
 
-            listPlayBtn.setOnClickListener(this);
-        }
-    }
-
-    public void getSongList() {
         ListView listView = rootView.findViewById(R.id.listView);
-        SongAdapter adapter = new SongAdapter(getContext(), mListener.getSongList());
         listView.setAdapter(adapter);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mListener.playSong(i);
             }
         });
+
     }
 
     public void updateInterface(Song currentSong){
         playingSongTitle.setText(currentSong.getTitle());
         playingSongArtist.setText(currentSong.getArtist());
         playingSongTitle.setSelected(true);
+        if(mListener.getCurrentState()==1) updateBtnOnPlay();
+        else updateBtnOnPause();
     }
 
     interface OnFragmentInteractionListener {
@@ -108,5 +112,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
                 break;
         }
     }
+
 
 }

@@ -146,6 +146,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             super.onSkipToNext();
             mMediaSessionCompat.sendSessionEvent("playNextSong", null);
         }
+
     };
 
     @Nullable
@@ -241,9 +242,9 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             }
             case AudioManager.AUDIOFOCUS_GAIN: {
                 if(mMediaPlayer != null){
-                    //if(!mMediaPlayer.isPlaying()){
-                    //    mMediaPlayer.start();
-                    //}
+                    if(!mMediaPlayer.isPlaying()){
+                        mMediaPlayer.start();
+                    }
                     mMediaPlayer.setVolume(1.0f, 1.0f);
                 }
                 break;
