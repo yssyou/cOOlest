@@ -236,15 +236,17 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             }
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
                 if(mMediaPlayer != null){
-                    mMediaPlayer.setVolume(0.3f, 0.3f);
+                    mMediaPlayer.setVolume(0.1f, 0.1f);
                 }
                 break;
             }
             case AudioManager.AUDIOFOCUS_GAIN: {
                 if(mMediaPlayer != null){
+                    /*
                     if(!mMediaPlayer.isPlaying()){
                         mMediaPlayer.start();
                     }
+                    */
                     mMediaPlayer.setVolume(1.0f, 1.0f);
                 }
                 break;

@@ -64,12 +64,12 @@ class ColorTask4 {
     }
 
     private void chooseColor(View view){
-        if(color == 0) view.setBackgroundColor(Color.rgb(random.nextInt(50)+150, 0, 0));
-        if(color == 1) view.setBackgroundColor(Color.rgb(random.nextInt(50)+150, random.nextInt(50)+150, 0));
-        if(color == 2) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+150, 0));
-        if(color == 3) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+150, random.nextInt(50)+150));
-        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, random.nextInt(50)+150));
-        if(color == 5) view.setBackgroundColor(Color.rgb(random.nextInt(50)+150, 0, random.nextInt(50)+150));
+        if(color == 0) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, 0, 0));
+        if(color == 1) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, random.nextInt(50)+200, 0));
+        if(color == 2) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+200, 0));
+        if(color == 3) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+200, random.nextInt(50)+200));
+        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, random.nextInt(50)+200));
+        if(color == 5) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, 0, random.nextInt(50)+200));
     }
 
     private class ShiftColorTask extends AsyncTask<Integer, Void, Void>{

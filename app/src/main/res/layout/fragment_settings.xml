@@ -4,4 +4,27 @@
              android:layout_height="match_parent"
              tools:context="com.example.rayku.tutorial21.SettingsFragment">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/theme0"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="White"
+            android:textSize="30sp"/>
+
+        <TextView
+            android:id="@+id/theme1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="4-Colors"
+            android:textSize="30sp"/>
+    </LinearLayout>
 </FrameLayout>

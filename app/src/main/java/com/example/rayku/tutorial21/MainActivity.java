@@ -7,6 +7,7 @@ import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -57,7 +58,7 @@ SongFragment.OnFragmentInteractionListener,
     private MediaBrowserCompat mMediaBrowserCompat;
     private MediaControllerCompat.TransportControls tpControls;
 
-    ArrayList<Song> arrayList = new ArrayList<>();
+    ArrayList<Song> arrayList;
 
     static Song currentSong;
     int currentIndex;
@@ -75,6 +76,11 @@ SongFragment.OnFragmentInteractionListener,
     private TabLayout mTabLayout;
 
     private static final int PERMISSION_REQUEST_CODE = 1;
+
+
+    public int currentTheme;
+
+    public View bg1, bg2, bg3, bg4;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -218,6 +224,11 @@ SongFragment.OnFragmentInteractionListener,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        bg1 = findViewById(R.id.bg1);
+        bg2 = findViewById(R.id.bg2);
+        bg3 = findViewById(R.id.bg3);
+        bg4 = findViewById(R.id.bg4);
+
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkPermission()) {
                 Log.e("permission", "Permission already granted.");
@@ -245,6 +256,8 @@ SongFragment.OnFragmentInteractionListener,
                 mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
 
         mMediaBrowserCompat.connect();
+
+        retrieveSongList();
 
     }
 
@@ -414,19 +427,38 @@ SongFragment.OnFragmentInteractionListener,
     @Override
     protected void onPause() {
         super.onPause();
-        //colorTask4.killLightColorTask();
+        if(colorTask4!=null) colorTask4.killLightColorTask();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //refreshColorTask();
+        if(currentTheme == 1)
+            colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
     }
 
-    public void refreshColorTask(){
-        if(colorTask4 !=null){ colorTask4.killLightColorTask(); }
-        colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001,
-                findViewById(R.id.bg1), findViewById(R.id.bg2), findViewById(R.id.bg3), findViewById(R.id.bg4));
+    @Override
+    public void switchTheme(int i){
+
+        currentTheme = i;
+
+        switch(i){
+            case 0:
+                if(colorTask4!=null){
+                    colorTask4.killLightColorTask();
+                    colorTask4 = null;
+                    bg1.setBackgroundColor(Color.rgb(255,255,255));
+                    bg2.setBackgroundColor(Color.rgb(255,255,255));
+                    bg3.setBackgroundColor(Color.rgb(255,255,255));
+                    bg4.setBackgroundColor(Color.rgb(255,255,255));
+                }
+                break;
+            case 1:
+                if(colorTask4==null)
+                    colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+                break;
+        }
+
     }
 
     @Override
