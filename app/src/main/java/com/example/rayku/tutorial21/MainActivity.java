@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -250,7 +251,7 @@ SongFragment.OnFragmentInteractionListener,
         customizeTabLayout();
 
         queue = new ArrayBlockingQueue<>(6);
-        mThreadPoolExecutor = new ThreadPoolExecutor(6, 6, 5000, TimeUnit.SECONDS, queue);
+        mThreadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
 
         mMediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
                 mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
@@ -258,6 +259,7 @@ SongFragment.OnFragmentInteractionListener,
         mMediaBrowserCompat.connect();
 
         retrieveSongList();
+
 
     }
 
@@ -498,5 +500,11 @@ SongFragment.OnFragmentInteractionListener,
                 break;
         }
     }
+
+
+
+
+
+
 
 }

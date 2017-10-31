@@ -18,7 +18,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     private OnFragmentInteractionListener mListener;
 
     View rootView;
-    TextView theme0, theme1;
+    TextView theme00, theme01, theme10, theme11;
 
     Typeface typeFace;
 
@@ -59,21 +59,25 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        theme0 = rootView.findViewById(R.id.theme0);
-        theme1 = rootView.findViewById(R.id.theme1);
-        theme0.setOnClickListener(this);
-        theme1.setOnClickListener(this);
-        theme0.setTypeface(typeFace);
-        theme1.setTypeface(typeFace);
+        theme00 = rootView.findViewById(R.id.theme00);
+        theme01 = rootView.findViewById(R.id.theme01);
+        theme10 = rootView.findViewById(R.id.theme10);
+        theme11 = rootView.findViewById(R.id.theme11);
+        theme00.setOnClickListener(this);
+        theme01.setOnClickListener(this);
+        theme00.setTypeface(typeFace);
+        theme01.setTypeface(typeFace);
+        theme10.setTypeface(typeFace);
+        theme11.setTypeface(typeFace);
     }
 
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.theme0:
+            case R.id.theme00:
                 mListener.switchTheme(0);
                 break;
-            case R.id.theme1:
+            case R.id.theme01:
                 mListener.switchTheme(1);
                 break;
         }

@@ -13,7 +13,7 @@ class ColorTask4 {
     private Random random;
     private int color;
     private ShiftColorTask task0;
-    private ColorTask task1, task2, task3, task4;
+    private ColorTask task1;
 
     ColorTask4(ThreadPoolExecutor mThreadPoolExecutor, int delay, int colorDelay,
                View bg1, View bg2, View bg3, View bg4){
@@ -23,32 +23,26 @@ class ColorTask4 {
         color = random.nextInt(6);
         task0 = new ShiftColorTask();
         task1 = new ColorTask();
-        task2 = new ColorTask();
-        task3 = new ColorTask();
-        task4 = new ColorTask();
 
         task0.executeOnExecutor(mThreadPoolExecutor, colorDelay);
-        task1.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg1, delay));
-        task2.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg2, delay));
-        task3.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg3, delay));
-        task4.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg4, delay));
+        task1.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg1, bg2, bg3, bg4, delay));
 
     }
 
     void killLightColorTask(){
         task0.cancel(true);
         task1.cancel(true);
-        task2.cancel(true);
-        task3.cancel(true);
-        task4.cancel(true);
     }
 
     private class ColorTask extends AsyncTask<ObjectToColorTask, Void, Void> {
-        View bg;
+        View bg1, bg2, bg3, bg4;
         int delay;
         @Override
         protected Void doInBackground(ObjectToColorTask... params) {
-            bg = params[0].getView();
+            bg1 = params[0].getView1();
+            bg2 = params[0].getView2();
+            bg3 = params[0].getView3();
+            bg4 = params[0].getView4();
             delay = params[0].getDelay();
             while (!isCancelled()) {
                 publishProgress();
@@ -59,7 +53,10 @@ class ColorTask4 {
 
         @Override
         protected void onProgressUpdate(Void... values) {
-            chooseColor(bg);
+            chooseColor(bg1);
+            chooseColor(bg2);
+            chooseColor(bg3);
+            chooseColor(bg4);
         }
     }
 
