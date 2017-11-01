@@ -2,10 +2,16 @@ package com.example.rayku.tutorial21;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyListsFragment extends Fragment {
 
@@ -13,10 +19,12 @@ public class MyListsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    ArrayList<Song> arrayList;
+
+    ArrayList<String> listsNames;
+    ArrayAdapter<String> adapter;
+
+    GridView listsGridView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,10 +43,38 @@ public class MyListsFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        arrayList = mListener.getSongList();
+        listsNames = new ArrayList<>();
+        listsNames.add("+");
+
+        listsNames.add("kpop");
+        listsNames.add("reggaeton");
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        listsGridView = getView().findViewById(R.id.listsGridView);
+
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, listsNames);
+
+        listsGridView.setAdapter(adapter);
+    }
+
+
+
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
-    interface OnFragmentInteractionListener { }
+    interface OnFragmentInteractionListener {
+        ArrayList<Song> getSongList();
+    }
 }

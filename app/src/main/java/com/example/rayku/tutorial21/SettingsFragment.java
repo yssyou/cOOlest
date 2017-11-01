@@ -1,6 +1,7 @@
 package com.example.rayku.tutorial21;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -59,12 +60,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        setupLayout();
+        theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
+    }
+
+    public void setupLayout(){
         theme00 = rootView.findViewById(R.id.theme00);
         theme01 = rootView.findViewById(R.id.theme01);
         theme10 = rootView.findViewById(R.id.theme10);
         theme11 = rootView.findViewById(R.id.theme11);
         theme00.setOnClickListener(this);
         theme01.setOnClickListener(this);
+        theme10.setOnClickListener(this);
+        theme11.setOnClickListener(this);
         theme00.setTypeface(typeFace);
         theme01.setTypeface(typeFace);
         theme10.setTypeface(typeFace);
@@ -74,11 +82,43 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         switch(view.getId()){
+
+
             case R.id.theme00:
                 mListener.switchTheme(0);
+
+                theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
                 break;
             case R.id.theme01:
                 mListener.switchTheme(1);
+
+                theme01.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+            case R.id.theme10:
+                mListener.switchTheme(0);
+
+                theme10.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+            case R.id.theme11:
+                mListener.switchTheme(1);
+
+                theme11.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
                 break;
         }
     }

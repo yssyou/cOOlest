@@ -1,55 +1,57 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.example.rayku.tutorial21.SettingsFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.rayku.tutorial21.SettingsFragment">
 
 
-
-    <com.google.android.flexbox.FlexboxLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:flexWrap="wrap"
-        app:alignItems="stretch"
-        app:alignContent="stretch" >
+        app:justifyContent="center">
 
         <TextView
             android:id="@+id/theme00"
             android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
+            android:layout_margin="10dp"
+            android:background="@color/lightDark"
             android:gravity="center"
             android:text="WHITE"
-            android:textSize="30sp"
-            app:layout_flexBasisPercent="50%" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/theme01"
             android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
+            android:layout_margin="10dp"
+            android:background="@color/lightDark"
             android:gravity="center"
             android:text="4-COLORS"
-            android:textSize="30sp"
-            app:layout_flexBasisPercent="50%" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/theme10"
             android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
+            android:layout_margin="10dp"
+            android:background="@color/lightDark"
             android:gravity="center"
             android:text="BLACK"
-            android:textSize="30sp"
-            app:layout_flexBasisPercent="50%" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/theme11"
             android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
+            android:layout_margin="10dp"
+            android:background="@color/lightDark"
             android:gravity="center"
             android:text="4-COLORS-DARK"
-            android:textSize="30sp"
-            app:layout_flexBasisPercent="50%" />
+            android:textSize="30sp" />
 
     </com.google.android.flexbox.FlexboxLayout>
 

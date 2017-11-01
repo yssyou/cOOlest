@@ -13,6 +13,8 @@ class Song{
         this.duration = duration;
     }
 
+    Song(){} // null song for MyListsFragment
+
     long getId(){ return id; }
     String getTitle(){return title;}
     String getArtist(){return artist;}
