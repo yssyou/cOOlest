@@ -12,14 +12,14 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-class SongAdapter extends BaseAdapter {
+class SongsListAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<Song> arrayList;
 
     private AssetManager assetManager;
     private Typeface typeFace;
 
-    SongAdapter(Context context, ArrayList<Song> arrayList){
+    SongsListAdapter(Context context, ArrayList<Song> arrayList){
         this.context = context;
         this.arrayList = arrayList;
         assetManager = context.getAssets();

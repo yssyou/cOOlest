@@ -24,7 +24,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     TextView playingSongTitle, playingSongArtist;
 
     ArrayList<Song> arrayList;
-    SongAdapter adapter;
+    SongsListAdapter adapter;
 
     public static final String TITLE = "CANCIONES";
 
@@ -43,7 +43,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         arrayList = mListener.getSongList();
-        adapter = new SongAdapter(getContext(), arrayList);
+        adapter = new SongsListAdapter(getContext(), arrayList);
     }
 
     @Override

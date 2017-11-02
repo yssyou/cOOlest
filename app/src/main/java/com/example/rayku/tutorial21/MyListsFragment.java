@@ -1,6 +1,7 @@
 package com.example.rayku.tutorial21;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,9 +25,11 @@ public class MyListsFragment extends Fragment {
     ArrayList<Song> arrayList;
 
     HashMap<String, ArrayList<Song>> lists;
-    ArrayAdapter<String> adapter;
+    ListsGridAdapter adapter;
 
     GridView listsGridView;
+
+    Typeface typeFace;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class MyListsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+
         arrayList = mListener.getSongList();
         lists = mListener.getLists();
     }
@@ -56,19 +61,14 @@ public class MyListsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-
-
         listsGridView = getView().findViewById(R.id.listsGridView);
 
         ArrayList<String> listTitles = new ArrayList<>();
         listTitles.addAll(lists.keySet());
-
-        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, listTitles);
+        adapter = new ListsGridAdapter(getContext(), listTitles);
         listsGridView.setAdapter(adapter);
 
     }
-
-
 
 
     @Override
@@ -80,5 +80,6 @@ public class MyListsFragment extends Fragment {
     interface OnFragmentInteractionListener {
         ArrayList<Song> getSongList();
         HashMap<String, ArrayList<Song>> getLists();
+        void createNewList(String name, ArrayList<Song> list);
     }
 }

@@ -275,9 +275,12 @@ SongFragment.OnFragmentInteractionListener,
         list2.add(arrayList.get(8));
         list2.add(arrayList.get(9));
 
-
-        lists.put("Lista1", list1);
-        lists.put("Lista2", list2);
+        lists.put("+", new ArrayList<Song>());
+        lists.put("Kpop", list1);
+        lists.put("música q pongo a la hora de echarme una cagaita", list2);
+        lists.put("reggaeton", list1);
+        lists.put("omg", list2);
+        lists.put("so this is it", list2);
 
 
     }
@@ -486,6 +489,11 @@ SongFragment.OnFragmentInteractionListener,
     }
 
     @Override
+    public void createNewList(String title, ArrayList<Song> list){
+        lists.put(title, list);
+    }
+
+    @Override
     public void onBackPressed() {
         moveTaskToBack(true);
     }
@@ -503,11 +511,9 @@ SongFragment.OnFragmentInteractionListener,
         if (result == PackageManager.PERMISSION_GRANTED)return true;
         else return false;
     }
-
     private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
