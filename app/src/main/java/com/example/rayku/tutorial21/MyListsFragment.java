@@ -11,7 +11,9 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class MyListsFragment extends Fragment {
 
@@ -21,7 +23,7 @@ public class MyListsFragment extends Fragment {
 
     ArrayList<Song> arrayList;
 
-    ArrayList<String> listsNames;
+    HashMap<String, ArrayList<Song>> lists;
     ArrayAdapter<String> adapter;
 
     GridView listsGridView;
@@ -47,22 +49,23 @@ public class MyListsFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         arrayList = mListener.getSongList();
-        listsNames = new ArrayList<>();
-        listsNames.add("+");
-
-        listsNames.add("kpop");
-        listsNames.add("reggaeton");
+        lists = mListener.getLists();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
+
         listsGridView = getView().findViewById(R.id.listsGridView);
 
-        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, listsNames);
+        ArrayList<String> listTitles = new ArrayList<>();
+        listTitles.addAll(lists.keySet());
 
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, listTitles);
         listsGridView.setAdapter(adapter);
+
     }
 
 
@@ -76,5 +79,6 @@ public class MyListsFragment extends Fragment {
 
     interface OnFragmentInteractionListener {
         ArrayList<Song> getSongList();
+        HashMap<String, ArrayList<Song>> getLists();
     }
 }

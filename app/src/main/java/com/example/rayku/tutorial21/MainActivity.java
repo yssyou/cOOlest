@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +83,9 @@ SongFragment.OnFragmentInteractionListener,
     public int currentTheme;
 
     public View bg1, bg2, bg3, bg4;
+
+    HashMap<String, ArrayList<Song>> lists;
+
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -260,6 +264,21 @@ SongFragment.OnFragmentInteractionListener,
 
         retrieveSongList();
 
+        lists = new HashMap<>();
+
+        ArrayList<Song> list1 = new ArrayList<>();
+        ArrayList<Song> list2 = new ArrayList<>();
+
+        list1.add(arrayList.get(2));
+        list1.add(arrayList.get(3));
+
+        list2.add(arrayList.get(8));
+        list2.add(arrayList.get(9));
+
+
+        lists.put("Lista1", list1);
+        lists.put("Lista2", list2);
+
 
     }
 
@@ -406,6 +425,9 @@ SongFragment.OnFragmentInteractionListener,
 
     @Override
     public ArrayList<Song> getSongList() { return arrayList; }
+
+    @Override
+    public HashMap<String, ArrayList<Song>> getLists(){ return lists; }
 
     @Override
     public ThreadPoolExecutor getThreadPoolExecutor() {
