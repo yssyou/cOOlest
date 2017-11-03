@@ -8,17 +8,15 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
-public class MyListsFragment extends Fragment {
+public class MyListsFragment extends Fragment{
 
-    public static final String TITLE = "MIS LISTAS";
+    public static final String TITLE = "MY PLAYLISTS";
 
     private OnFragmentInteractionListener mListener;
 
@@ -68,6 +66,13 @@ public class MyListsFragment extends Fragment {
         adapter = new ListsGridAdapter(getContext(), listTitles);
         listsGridView.setAdapter(adapter);
 
+        listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mListener.playList(i);
+            }
+        });
+
     }
 
 
@@ -77,9 +82,13 @@ public class MyListsFragment extends Fragment {
         mListener = null;
     }
 
+
+
+
     interface OnFragmentInteractionListener {
         ArrayList<Song> getSongList();
         HashMap<String, ArrayList<Song>> getLists();
         void createNewList(String name, ArrayList<Song> list);
+        void playList(int i);
     }
 }

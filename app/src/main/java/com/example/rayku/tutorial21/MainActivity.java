@@ -29,24 +29,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements
-        SettingsFragment.OnFragmentInteractionListener,
-        ListFragment.OnFragmentInteractionListener,
-SongFragment.OnFragmentInteractionListener,
-        MyListsFragment.OnFragmentInteractionListener {
-
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
+public class MainActivity extends AppCompatActivity implements SettingsFragment.OnFragmentInteractionListener,
+ListFragment.OnFragmentInteractionListener, SongFragment.OnFragmentInteractionListener,
+MyListsFragment.OnFragmentInteractionListener {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
@@ -79,13 +76,13 @@ SongFragment.OnFragmentInteractionListener,
 
     private static final int PERMISSION_REQUEST_CODE = 1;
 
-
     public int currentTheme;
 
     public View bg1, bg2, bg3, bg4;
 
     HashMap<String, ArrayList<Song>> lists;
 
+    LinearLayout mainLayout, newListLayout;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -229,6 +226,10 @@ SongFragment.OnFragmentInteractionListener,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mainLayout = findViewById(R.id.mainLayout);
+        newListLayout = findViewById(R.id.newListLayout);
+        newListLayout.setVisibility(View.INVISIBLE);
+
         bg1 = findViewById(R.id.bg1);
         bg2 = findViewById(R.id.bg2);
         bg3 = findViewById(R.id.bg3);
@@ -242,15 +243,12 @@ SongFragment.OnFragmentInteractionListener,
             }
         }
 
-        retrieveSongList();
-
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        ViewPager mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
-
-        mTabLayout = (TabLayout) findViewById(R.id.tab);
+        mTabLayout = findViewById(R.id.tab);
         mTabLayout.setupWithViewPager(mViewPager);
         customizeTabLayout();
 
@@ -333,9 +331,12 @@ SongFragment.OnFragmentInteractionListener,
 
         currentIndex = 0;
         currentSong = arrayList.get(currentIndex);
+
+        SongsListAdapter adapter = new SongsListAdapter(this, arrayList);
+        ListView listView = findViewById(R.id.listToNew);
+        listView.setAdapter(adapter);
     }
 
-    @Override
     public void playSong(int i){
         currentIndex = i;
         currentSong  = arrayList.get(i);
@@ -359,7 +360,6 @@ SongFragment.OnFragmentInteractionListener,
         }
     }
 
-    @Override
     public void playPrev(View view){
         if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
         else if(currentIndex < 1) currentIndex = arrayList.size()-1;
@@ -367,7 +367,6 @@ SongFragment.OnFragmentInteractionListener,
         playSong(currentIndex);
     }
 
-    @Override
     public void playNext(View view){
         if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
         else if(currentIndex == arrayList.size()-1) currentIndex = 0;
@@ -375,7 +374,6 @@ SongFragment.OnFragmentInteractionListener,
         playSong(currentIndex);
     }
 
-    @Override
     public void playPause(View view){
         if( mCurrentState == STATE_PAUSED ) {
             mCurrentState = STATE_PLAYING;
@@ -394,7 +392,6 @@ SongFragment.OnFragmentInteractionListener,
         }
     }
 
-    @Override
     public void loop(){
         if(mCurrentLoop==LOOPING){
             if(songFragment != null) {
@@ -409,7 +406,6 @@ SongFragment.OnFragmentInteractionListener,
         }
     }
 
-    @Override
     public void rand(){
         if(mCurrentRand==RAND){
             if(songFragment != null) {
@@ -426,18 +422,14 @@ SongFragment.OnFragmentInteractionListener,
 
     public void setTimeOnSeekBarChange(int i){ playTime = i; }
 
-    @Override
     public ArrayList<Song> getSongList() { return arrayList; }
 
-    @Override
     public HashMap<String, ArrayList<Song>> getLists(){ return lists; }
 
-    @Override
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return mThreadPoolExecutor;
     }
 
-    @Override
     public void changeFromSeekBar(int i) {
         tpControls.seekTo(i);
     }
@@ -464,7 +456,6 @@ SongFragment.OnFragmentInteractionListener,
             colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
     }
 
-    @Override
     public void switchTheme(int i){
 
         currentTheme = i;
@@ -493,9 +484,25 @@ SongFragment.OnFragmentInteractionListener,
         lists.put(title, list);
     }
 
+    public void playList(int i){
+
+        if(i == 0){
+            mainLayout.setVisibility(View.INVISIBLE);
+            newListLayout.setVisibility(View.VISIBLE);
+        }
+
+        else {
+            playSong(2);
+        }
+    }
+
     @Override
     public void onBackPressed() {
-        moveTaskToBack(true);
+        if(newListLayout.getVisibility()== View.VISIBLE){
+            newListLayout.setVisibility(View.INVISIBLE);
+            mainLayout.setVisibility(View.VISIBLE);
+        } else
+            moveTaskToBack(true);
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class SongFragment extends Fragment implements View.OnClickListener {
 
-    public static final String TITLE = "REPRODUCCIÓN";
+    public static final String TITLE = "PLAYBACK";
 
     private OnFragmentInteractionListener mListener;
 

@@ -26,7 +26,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     ArrayList<Song> arrayList;
     SongsListAdapter adapter;
 
-    public static final String TITLE = "CANCIONES";
+    public static final String TITLE = "PLAYLIST";
 
     @Override
     public void onAttach(Context context) {

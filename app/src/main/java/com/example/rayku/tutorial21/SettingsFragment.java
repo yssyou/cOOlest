@@ -3,7 +3,6 @@ package com.example.rayku.tutorial21;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,7 +13,7 @@ import android.widget.TextView;
 
 public class SettingsFragment extends Fragment implements View.OnClickListener{
 
-    public static final String TITLE = "OPCIONES";
+    public static final String TITLE = "SETTINGS";
 
     private OnFragmentInteractionListener mListener;
 
