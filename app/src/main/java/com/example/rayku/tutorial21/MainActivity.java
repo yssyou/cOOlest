@@ -29,7 +29,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -58,6 +57,7 @@ MyListsFragment.OnFragmentInteractionListener {
     private MediaControllerCompat.TransportControls tpControls;
 
     ArrayList<Song> arrayList;
+    HashMap<String, ArrayList<Song>> lists;
 
     static Song currentSong;
     int currentIndex;
@@ -70,7 +70,7 @@ MyListsFragment.OnFragmentInteractionListener {
     private SettingsFragment settingsFragment;
     private ListFragment listFragment;
     private SongFragment songFragment;
-    private MyListsFragment albumsFragment;
+    private MyListsFragment myListsFragment;
 
     private TabLayout mTabLayout;
 
@@ -80,9 +80,9 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public View bg1, bg2, bg3, bg4;
 
-    HashMap<String, ArrayList<Song>> lists;
+    private LinearLayout mainLayout, newListLayout;
 
-    LinearLayout mainLayout, newListLayout;
+    Typeface typeFace;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -203,7 +203,7 @@ MyListsFragment.OnFragmentInteractionListener {
                     songFragment = (SongFragment) createdFragment;
                     break;
                 case 3:
-                    albumsFragment = (MyListsFragment) createdFragment;
+                    myListsFragment = (MyListsFragment) createdFragment;
                     break;
             }
             return createdFragment;
@@ -226,9 +226,7 @@ MyListsFragment.OnFragmentInteractionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mainLayout = findViewById(R.id.mainLayout);
-        newListLayout = findViewById(R.id.newListLayout);
-        newListLayout.setVisibility(View.INVISIBLE);
+        typeFace = Typeface.createFromAsset(getAssets(), "Amatic-Bold.ttf");
 
         bg1 = findViewById(R.id.bg1);
         bg2 = findViewById(R.id.bg2);
@@ -262,6 +260,28 @@ MyListsFragment.OnFragmentInteractionListener {
 
         retrieveSongList();
 
+        setUpListsView();
+    }
+
+    private void customizeTabLayout() {
+        ViewGroup vg = (ViewGroup) mTabLayout.getChildAt(0);
+        for (int j=0; j<vg.getChildCount(); j++) {
+            ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
+            for (int i = 0; i < vgTab.getChildCount(); i++) {
+                View tabViewChild = vgTab.getChildAt(i);
+                if (tabViewChild instanceof TextView) {
+                    ((TextView) tabViewChild).setTypeface(typeFace);
+                }
+            }
+        }
+    }
+
+    private void setUpListsView(){
+
+        mainLayout = findViewById(R.id.mainLayout);
+        newListLayout = findViewById(R.id.newListLayout);
+        newListLayout.setVisibility(View.INVISIBLE);
+
         lists = new HashMap<>();
 
         ArrayList<Song> list1 = new ArrayList<>();
@@ -280,23 +300,9 @@ MyListsFragment.OnFragmentInteractionListener {
         lists.put("omg", list2);
         lists.put("so this is it", list2);
 
-
-    }
-
-    private void customizeTabLayout() {
-        AssetManager assetManager = getAssets();
-        Typeface typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
-
-        ViewGroup vg = (ViewGroup) mTabLayout.getChildAt(0);
-        for (int j=0; j<vg.getChildCount(); j++) {
-            ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
-            for (int i = 0; i < vgTab.getChildCount(); i++) {
-                View tabViewChild = vgTab.getChildAt(i);
-                if (tabViewChild instanceof TextView) {
-                    ((TextView) tabViewChild).setTypeface(typeFace);
-                }
-            }
-        }
+        SongsListAdapter adapter = new SongsListAdapter(this, arrayList, typeFace);
+        ListView listView = findViewById(R.id.listToNew);
+        listView.setAdapter(adapter);
     }
 
     private void retrieveSongList(){
@@ -331,10 +337,6 @@ MyListsFragment.OnFragmentInteractionListener {
 
         currentIndex = 0;
         currentSong = arrayList.get(currentIndex);
-
-        SongsListAdapter adapter = new SongsListAdapter(this, arrayList);
-        ListView listView = findViewById(R.id.listToNew);
-        listView.setAdapter(adapter);
     }
 
     public void playSong(int i){
@@ -434,6 +436,7 @@ MyListsFragment.OnFragmentInteractionListener {
         tpControls.seekTo(i);
     }
 
+    public Typeface getTypeface(){ return typeFace; }
     public Song getCurrentSong(){ return currentSong; }
     public int getCurrentState(){ return mCurrentState; }
     public long getCurrentTime() {
@@ -478,19 +481,16 @@ MyListsFragment.OnFragmentInteractionListener {
         }
 
     }
-
-    @Override
+    
     public void createNewList(String title, ArrayList<Song> list){
         lists.put(title, list);
     }
 
     public void playList(int i){
-
         if(i == 0){
             mainLayout.setVisibility(View.INVISIBLE);
             newListLayout.setVisibility(View.VISIBLE);
         }
-
         else {
             playSong(2);
         }

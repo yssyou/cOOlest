@@ -19,14 +19,11 @@ class ListsGridAdapter extends BaseAdapter {
 
     private ArrayList<String> listsTitles;
 
-    ListsGridAdapter(Context context, ArrayList<String> listsTitles){
+    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace){
         this.context = context;
         this.listsTitles = listsTitles;
-
+        this.typeFace = typeFace;
         Collections.sort(listsTitles);
-
-        AssetManager assetManager = context.getAssets();
-        typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
     }
 
     private class ViewHolder {

@@ -63,7 +63,7 @@ public class MyListsFragment extends Fragment{
 
         ArrayList<String> listTitles = new ArrayList<>();
         listTitles.addAll(lists.keySet());
-        adapter = new ListsGridAdapter(getContext(), listTitles);
+        adapter = new ListsGridAdapter(getContext(), listTitles, mListener.getTypeface());
         listsGridView.setAdapter(adapter);
 
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -88,7 +88,7 @@ public class MyListsFragment extends Fragment{
     interface OnFragmentInteractionListener {
         ArrayList<Song> getSongList();
         HashMap<String, ArrayList<Song>> getLists();
-        void createNewList(String name, ArrayList<Song> list);
         void playList(int i);
+        Typeface getTypeface();
     }
 }

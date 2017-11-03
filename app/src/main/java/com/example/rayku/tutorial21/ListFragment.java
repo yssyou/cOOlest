@@ -43,13 +43,13 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         arrayList = mListener.getSongList();
-        adapter = new SongsListAdapter(getContext(), arrayList);
+        adapter = new SongsListAdapter(getContext(), arrayList, mListener.getTypeface());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_list, container, false);
-        return rootView;
+        return rootView;   // I am using a rootView to see if it improves performance
     }
 
     @Override
@@ -69,9 +69,8 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         listPlayBtn = rootView.findViewById(R.id.listPlayBtn);
         playingSongTitle = rootView.findViewById(R.id.playing_song_title);
         playingSongArtist = rootView.findViewById(R.id.playing_song_artist);
-        Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
-        playingSongTitle.setTypeface(typeFace);
-        playingSongArtist.setTypeface(typeFace);
+        playingSongTitle.setTypeface(mListener.getTypeface());
+        playingSongArtist.setTypeface(mListener.getTypeface());
         listPlayBtn.setOnClickListener(this);
 
         ListView listView = rootView.findViewById(R.id.listView);
@@ -99,6 +98,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         void playPause(View view);
         Song getCurrentSong();
         int getCurrentState();
+        Typeface getTypeface();
     }
 
     public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }

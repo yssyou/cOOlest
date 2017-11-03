@@ -15,15 +15,12 @@ import java.util.ArrayList;
 class SongsListAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<Song> arrayList;
-
-    private AssetManager assetManager;
     private Typeface typeFace;
 
-    SongsListAdapter(Context context, ArrayList<Song> arrayList){
+    SongsListAdapter(Context context, ArrayList<Song> arrayList, Typeface typeFace){
         this.context = context;
         this.arrayList = arrayList;
-        assetManager = context.getAssets();
-        typeFace = Typeface.createFromAsset(assetManager, "Amatic-Bold.ttf");
+        this.typeFace = typeFace;
     }
 
     private class ViewHolder { // this is an amazing piece of code :D
