@@ -22,7 +22,7 @@ public class MyListsFragment extends Fragment{
 
     ArrayList<Song> arrayList;
 
-    HashMap<String, ArrayList<Song>> lists;
+    HashMap<String, ArrayList<Integer>> lists;
     ListsGridAdapter adapter;
 
     GridView listsGridView;
@@ -58,7 +58,10 @@ public class MyListsFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        updateInterface();
+    }
 
+    public void updateInterface(){
         listsGridView = getView().findViewById(R.id.listsGridView);
 
         ArrayList<String> listTitles = new ArrayList<>();
@@ -72,7 +75,6 @@ public class MyListsFragment extends Fragment{
                 mListener.playList(i);
             }
         });
-
     }
 
 
@@ -87,7 +89,7 @@ public class MyListsFragment extends Fragment{
 
     interface OnFragmentInteractionListener {
         ArrayList<Song> getSongList();
-        HashMap<String, ArrayList<Song>> getLists();
+        HashMap<String, ArrayList<Integer>> getLists();
         void playList(int i);
         Typeface getTypeface();
     }

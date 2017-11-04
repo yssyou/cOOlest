@@ -4,9 +4,12 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -29,11 +32,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -57,7 +63,7 @@ MyListsFragment.OnFragmentInteractionListener {
     private MediaControllerCompat.TransportControls tpControls;
 
     ArrayList<Song> arrayList;
-    HashMap<String, ArrayList<Song>> lists;
+    HashMap<String, ArrayList<Integer>> lists;
 
     static Song currentSong;
     int currentIndex;
@@ -76,13 +82,15 @@ MyListsFragment.OnFragmentInteractionListener {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
 
-    public int currentTheme;
-
     public View bg1, bg2, bg3, bg4;
 
     private LinearLayout mainLayout, newListLayout;
 
     Typeface typeFace;
+    SharedPreferences sharedPreferences;
+
+    Button createButton;
+    EditText newName;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -226,6 +234,10 @@ MyListsFragment.OnFragmentInteractionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mainLayout = findViewById(R.id.mainLayout);
+        newListLayout = findViewById(R.id.newListLayout);
+        newListLayout.setVisibility(View.INVISIBLE);
+
         typeFace = Typeface.createFromAsset(getAssets(), "Amatic-Bold.ttf");
 
         bg1 = findViewById(R.id.bg1);
@@ -240,6 +252,9 @@ MyListsFragment.OnFragmentInteractionListener {
                 requestPermission();
             }
         }
+
+        sharedPreferences = this.getSharedPreferences("com.example.rayku.tutorial21", Context.MODE_PRIVATE);
+        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         ViewPager mViewPager = findViewById(R.id.container);
@@ -259,7 +274,6 @@ MyListsFragment.OnFragmentInteractionListener {
         mMediaBrowserCompat.connect();
 
         retrieveSongList();
-
         setUpListsView();
     }
 
@@ -278,31 +292,62 @@ MyListsFragment.OnFragmentInteractionListener {
 
     private void setUpListsView(){
 
-        mainLayout = findViewById(R.id.mainLayout);
-        newListLayout = findViewById(R.id.newListLayout);
-        newListLayout.setVisibility(View.INVISIBLE);
-
         lists = new HashMap<>();
-
-        ArrayList<Song> list1 = new ArrayList<>();
-        ArrayList<Song> list2 = new ArrayList<>();
-
-        list1.add(arrayList.get(2));
-        list1.add(arrayList.get(3));
-
-        list2.add(arrayList.get(8));
-        list2.add(arrayList.get(9));
-
-        lists.put("+", new ArrayList<Song>());
-        lists.put("Kpop", list1);
-        lists.put("música q pongo a la hora de echarme una cagaita", list2);
-        lists.put("reggaeton", list1);
-        lists.put("omg", list2);
-        lists.put("so this is it", list2);
 
         SongsListAdapter adapter = new SongsListAdapter(this, arrayList, typeFace);
         ListView listView = findViewById(R.id.listToNew);
         listView.setAdapter(adapter);
+
+        ((TextView)findViewById(R.id.textView)).setTypeface(typeFace);
+
+        createButton = findViewById(R.id.createButton);
+        newName = findViewById(R.id.newName);
+        createButton.setTypeface(typeFace);
+        newName.setTypeface(typeFace);
+
+        lists.put("+", new ArrayList<Integer>());
+        try{
+            SQLiteDatabase db = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
+            db.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, idx INT(3))");
+
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('kpop', 5)");
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('kpop', 6)");
+
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('jazz', 7)");
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('jazz', 8)");
+
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 12)");
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 13)");
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 14)");
+            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 15)");
+
+            Cursor c = db.rawQuery("SELECT * FROM lists", null);
+            int nameIndex = c.getColumnIndex("name");
+            int idxIndex = c.getColumnIndex("idx");
+            c.moveToFirst();
+            while(c!=null){
+                String listsName = c.getString(nameIndex);
+                if(!lists.keySet().contains(listsName)){
+                    lists.put(listsName, new ArrayList<Integer>());
+                }
+                c.moveToNext();
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void createNewList(View view){
+        String nameInput = newName.getText().toString();
+
+        lists.put(nameInput, new ArrayList<Integer>());
+        newListLayout.setVisibility(View.INVISIBLE);
+        mainLayout.setVisibility(View.VISIBLE);
+
+        if(myListsFragment != null) {
+            myListsFragment.updateInterface();
+        }
     }
 
     private void retrieveSongList(){
@@ -426,7 +471,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public ArrayList<Song> getSongList() { return arrayList; }
 
-    public HashMap<String, ArrayList<Song>> getLists(){ return lists; }
+    public HashMap<String, ArrayList<Integer>> getLists(){ return lists; }
 
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return mThreadPoolExecutor;
@@ -445,6 +490,7 @@ MyListsFragment.OnFragmentInteractionListener {
     }
     public int getCurrentLoop(){ return mCurrentLoop; }
     public int getCurrentRand(){ return mCurrentRand; }
+    public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
 
     @Override
     protected void onPause() {
@@ -455,13 +501,13 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onResume() {
         super.onResume();
-        if(currentTheme == 1)
+        if(sharedPreferences.getInt("theme", 666)==1)
             colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
     }
 
     public void switchTheme(int i){
 
-        currentTheme = i;
+        sharedPreferences.edit().putInt("theme", i).apply();
 
         switch(i){
             case 0:
@@ -480,10 +526,6 @@ MyListsFragment.OnFragmentInteractionListener {
                 break;
         }
 
-    }
-    
-    public void createNewList(String title, ArrayList<Song> list){
-        lists.put(title, list);
     }
 
     public void playList(int i){

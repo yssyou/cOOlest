@@ -93,6 +93,7 @@
         android:orientation="vertical">
 
         <EditText
+            android:id="@+id/newName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -109,8 +110,10 @@
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
-            android:layout_marginTop="10dp"
-            android:text="Which songs do you want in this playlist?" />
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="Which songs do you want in this playlist?"
+            android:textSize="20sp" />
 
         <ListView
             android:id="@+id/listToNew"
@@ -118,11 +121,13 @@
             android:layout_height="320dp" />
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/createButton"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:background="@color/lightDark"
-            android:text="CREATE!" />
+            android:background="#00000000"
+            android:onClick="createNewList"
+            android:text="CREATE!"
+            android:textSize="30sp" />
 
     </LinearLayout>
 

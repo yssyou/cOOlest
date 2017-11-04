@@ -54,13 +54,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
 
     interface OnFragmentInteractionListener {
         void switchTheme(int i);
+        int getSpTheme();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setupLayout();
-        theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
     }
 
     public void setupLayout(){
@@ -76,12 +76,43 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         theme01.setTypeface(typeFace);
         theme10.setTypeface(typeFace);
         theme11.setTypeface(typeFace);
+
+        int theme = mListener.getSpTheme();
+        switch(theme){
+            case 0:
+                theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+            case 1:
+                theme01.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+            case 2:
+                theme10.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+            case 3:
+                theme11.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
+                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                break;
+        }
     }
 
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-
 
             case R.id.theme00:
                 mListener.switchTheme(0);
