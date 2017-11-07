@@ -7,7 +7,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -39,7 +38,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -63,7 +61,7 @@ MyListsFragment.OnFragmentInteractionListener {
     private MediaControllerCompat.TransportControls tpControls;
 
     ArrayList<Song> arrayList;
-    HashMap<String, ArrayList<Integer>> lists;
+    HashMap<String, ArrayList<Long>> lists;
 
     static Song currentSong;
     int currentIndex;
@@ -91,6 +89,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
     Button createButton;
     EditText newName;
+
+    SQLiteDatabase SQLiteDB;
 
     private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -234,6 +234,11 @@ MyListsFragment.OnFragmentInteractionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
+
+        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
+
         mainLayout = findViewById(R.id.mainLayout);
         newListLayout = findViewById(R.id.newListLayout);
         newListLayout.setVisibility(View.INVISIBLE);
@@ -274,7 +279,7 @@ MyListsFragment.OnFragmentInteractionListener {
         mMediaBrowserCompat.connect();
 
         retrieveSongList();
-        setUpListsView();
+        setupListsView();
     }
 
     private void customizeTabLayout() {
@@ -290,9 +295,9 @@ MyListsFragment.OnFragmentInteractionListener {
         }
     }
 
-    private void setUpListsView(){
-
+    private void setupListsView(){
         lists = new HashMap<>();
+        lists.put("+", new ArrayList<Long>());
 
         SongsListAdapter adapter = new SongsListAdapter(this, arrayList, typeFace);
         ListView listView = findViewById(R.id.listToNew);
@@ -305,30 +310,18 @@ MyListsFragment.OnFragmentInteractionListener {
         createButton.setTypeface(typeFace);
         newName.setTypeface(typeFace);
 
-        lists.put("+", new ArrayList<Integer>());
         try{
-            SQLiteDatabase db = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-            db.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, idx INT(3))");
-
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('kpop', 5)");
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('kpop', 6)");
-
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('jazz', 7)");
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('jazz', 8)");
-
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 12)");
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 13)");
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 14)");
-            db.execSQL("INSERT INTO lists (name, idx) VALUES ('latin', 15)");
-
-            Cursor c = db.rawQuery("SELECT * FROM lists", null);
+            Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
             int nameIndex = c.getColumnIndex("name");
-            int idxIndex = c.getColumnIndex("idx");
+            int idIndex = c.getColumnIndex("id");
             c.moveToFirst();
             while(c!=null){
-                String listsName = c.getString(nameIndex);
-                if(!lists.keySet().contains(listsName)){
-                    lists.put(listsName, new ArrayList<Integer>());
+                String listName = c.getString(nameIndex);
+                long id = c.getLong(idIndex);// does this work? the getFloat?
+                if(!lists.keySet().contains(listName)){
+                    lists.put(listName, new ArrayList<Long>());
+                }else{
+                    lists.get(listName).add(id);
                 }
                 c.moveToNext();
             }
@@ -336,12 +329,29 @@ MyListsFragment.OnFragmentInteractionListener {
         }catch(Exception e){
             e.printStackTrace();
         }
+
     }
 
     public void createNewList(View view){
-        String nameInput = newName.getText().toString();
 
-        lists.put(nameInput, new ArrayList<Integer>());
+        String nameInput = newName.getText().toString();
+        ArrayList<Long> theIndexes = new ArrayList<>();
+
+        theIndexes.add(arrayList.get(5).getId());
+        theIndexes.add(arrayList.get(6).getId());
+        theIndexes.add(arrayList.get(7).getId());
+
+        try{
+            for(long anIndex : theIndexes){
+                String stringToAddIndex = "INSERT INTO lists (name, idx) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
+                SQLiteDB.execSQL(stringToAddIndex);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        lists.put(nameInput, theIndexes);
+
         newListLayout.setVisibility(View.INVISIBLE);
         mainLayout.setVisibility(View.VISIBLE);
 
@@ -471,7 +481,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public ArrayList<Song> getSongList() { return arrayList; }
 
-    public HashMap<String, ArrayList<Integer>> getLists(){ return lists; }
+    public HashMap<String, ArrayList<Long>> getLists(){ return lists; }
 
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return mThreadPoolExecutor;
@@ -528,13 +538,12 @@ MyListsFragment.OnFragmentInteractionListener {
 
     }
 
-    public void playList(int i){
-        if(i == 0){
+    public void setList(String listName){
+        if(listName.equals("+")){
             mainLayout.setVisibility(View.INVISIBLE);
             newListLayout.setVisibility(View.VISIBLE);
-        }
-        else {
-            playSong(2);
+        }else{
+
         }
     }
 
@@ -577,11 +586,6 @@ MyListsFragment.OnFragmentInteractionListener {
                 break;
         }
     }
-
-
-
-
-
 
 
 }

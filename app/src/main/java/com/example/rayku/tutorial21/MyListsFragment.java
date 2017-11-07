@@ -10,23 +10,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MyListsFragment extends Fragment{
 
-    public static final String TITLE = "MY PLAYLISTS";
+    public static final String TITLE = "MY LISTS";
 
     private OnFragmentInteractionListener mListener;
 
-    ArrayList<Song> arrayList;
-
-    HashMap<String, ArrayList<Integer>> lists;
+    ArrayList<String> listsTitles;
     ListsGridAdapter adapter;
 
     GridView listsGridView;
-
     Typeface typeFace;
 
     @Override
@@ -48,11 +46,7 @@ public class MyListsFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
-
-        arrayList = mListener.getSongList();
-        lists = mListener.getLists();
     }
 
     @Override
@@ -64,19 +58,19 @@ public class MyListsFragment extends Fragment{
     public void updateInterface(){
         listsGridView = getView().findViewById(R.id.listsGridView);
 
-        ArrayList<String> listTitles = new ArrayList<>();
-        listTitles.addAll(lists.keySet());
-        adapter = new ListsGridAdapter(getContext(), listTitles, mListener.getTypeface());
+        listsTitles = new ArrayList<>();
+        listsTitles.addAll(mListener.getLists().keySet());
+
+        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface());
         listsGridView.setAdapter(adapter);
 
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mListener.playList(i);
+                mListener.setList(listsGridView.getItemAtPosition(i).toString());
             }
         });
     }
-
 
     @Override
     public void onDetach() {
@@ -84,13 +78,9 @@ public class MyListsFragment extends Fragment{
         mListener = null;
     }
 
-
-
-
     interface OnFragmentInteractionListener {
-        ArrayList<Song> getSongList();
-        HashMap<String, ArrayList<Integer>> getLists();
-        void playList(int i);
+        HashMap<String, ArrayList<Long>> getLists();
+        void setList(String listName);
         Typeface getTypeface();
     }
 }
