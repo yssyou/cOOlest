@@ -1,4 +1,4 @@
-package com.example.rayku.tutorial21;
+package com.example.rayku.coolest;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.session.MediaController;
 import android.net.Uri;
 import android.os.Build;
 import android.os.RemoteException;
@@ -35,6 +36,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,11 +67,11 @@ MyListsFragment.OnFragmentInteractionListener {
 
     static Song currentSong;
     int currentIndex;
-    long playTime, prevTime;
 
     ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor mThreadPoolExecutor;
     ColorTask4 colorTask4;
+    SeekBarTask seekBarTask;
 
     private SettingsFragment settingsFragment;
     private ListFragment listFragment;
@@ -103,6 +105,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
+
             } catch( RemoteException e ) { e.printStackTrace(); }
         }
     };
@@ -155,16 +158,17 @@ MyListsFragment.OnFragmentInteractionListener {
                     else
                         playNext(null);
                     break;
-                case "killSeekBarTask":
-                    if(songFragment != null)
-                        songFragment.killSeekBarTask();
-                    break;
                 case "lostAudioFocus":
                     playPause(null);
                     break;
+
+                case "sureRefreshIt!":
+                    if(songFragment!=null){
+                        songFragment.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
+                    }
+                    break;
             }
         }
-
     };
 
     public static class PlaceholderFragment extends Fragment {
@@ -280,6 +284,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
         retrieveSongList();
         setupListsView();
+
     }
 
     private void customizeTabLayout() {
@@ -395,6 +400,12 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void playSong(int i){
+
+        if(seekBarTask == null){ // had to start it here due to a weird interaction
+            seekBarTask = new SeekBarTask();
+            seekBarTask.executeOnExecutor(mThreadPoolExecutor, tpControls);
+        }
+
         currentIndex = i;
         currentSong  = arrayList.get(i);
         long currentId = currentSong.getId();
@@ -405,15 +416,11 @@ MyListsFragment.OnFragmentInteractionListener {
         tpControls.playFromUri(trackUri, null);
         tpControls.play();
 
-        prevTime = System.currentTimeMillis();
-        playTime = 0;
-
         if(listFragment != null) {
             listFragment.updateInterface(currentSong);
         }
         if(songFragment != null) {
             songFragment.updateInterface(currentSong);
-            songFragment.refreshSeekBarTask(currentSong.getDuration(), 0);
         }
     }
 
@@ -435,17 +442,9 @@ MyListsFragment.OnFragmentInteractionListener {
         if( mCurrentState == STATE_PAUSED ) {
             mCurrentState = STATE_PLAYING;
             tpControls.play();
-
-            prevTime = System.currentTimeMillis();
-
-            if(songFragment != null){
-                songFragment.refreshSeekBarTask(arrayList.get(currentIndex).getDuration(), -1);
-            }
         } else {
             mCurrentState = STATE_PAUSED;
             tpControls.pause();
-
-            playTime += System.currentTimeMillis()-prevTime; // almacena tiempo transcurrido
         }
     }
 
@@ -477,27 +476,15 @@ MyListsFragment.OnFragmentInteractionListener {
         }
     }
 
-    public void setTimeOnSeekBarChange(int i){ playTime = i; }
-
-    public ArrayList<Song> getSongList() { return arrayList; }
-
-    public HashMap<String, ArrayList<Long>> getLists(){ return lists; }
-
-    public ThreadPoolExecutor getThreadPoolExecutor() {
-        return mThreadPoolExecutor;
-    }
-
     public void changeFromSeekBar(int i) {
         tpControls.seekTo(i);
     }
 
+    public ArrayList<Song> getSongList() { return arrayList; }
+    public HashMap<String, ArrayList<Long>> getLists(){ return lists; }
     public Typeface getTypeface(){ return typeFace; }
     public Song getCurrentSong(){ return currentSong; }
     public int getCurrentState(){ return mCurrentState; }
-    public long getCurrentTime() {
-        if(mCurrentState == 1) return playTime+System.currentTimeMillis()-prevTime;
-        else return playTime;
-    }
     public int getCurrentLoop(){ return mCurrentLoop; }
     public int getCurrentRand(){ return mCurrentRand; }
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
@@ -506,6 +493,7 @@ MyListsFragment.OnFragmentInteractionListener {
     protected void onPause() {
         super.onPause();
         if(colorTask4!=null) colorTask4.killLightColorTask();
+        if(seekBarTask!=null) seekBarTask.cancel(true);
     }
 
     @Override
@@ -559,7 +547,6 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         mMediaBrowserCompat.disconnect();
         mThreadPoolExecutor.shutdown();
     }

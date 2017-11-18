@@ -1,4 +1,4 @@
-package com.example.rayku.tutorial21;
+package com.example.rayku.coolest;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;

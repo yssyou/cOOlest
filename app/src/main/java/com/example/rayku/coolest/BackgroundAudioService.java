@@ -1,4 +1,4 @@
-package com.example.rayku.tutorial21;
+package com.example.rayku.coolest;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
@@ -23,6 +24,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
 import android.text.TextUtils;
+import android.view.View;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,13 +53,10 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             if (!successfullyRetrievedAudioFocus()) {
                 return;
             }
-
             mMediaSessionCompat.setActive(true);
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-
             showPlayingNotification();
             mMediaPlayer.start();
-
         }
 
         @Override
@@ -67,8 +66,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
                 mMediaPlayer.pause();
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
                 showPausedNotification();
-
-                mMediaSessionCompat.sendSessionEvent("killSeekBarTask", null);
             }
         }
 
@@ -147,6 +144,18 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             mMediaSessionCompat.sendSessionEvent("playNextSong", null);
         }
 
+        @Override
+        public void onCustomAction(String action, Bundle extras) {
+            super.onCustomAction(action, extras);
+            switch(action){
+                case "refreshSeekBarPlz":
+                    Bundle valuableInfo = new Bundle();
+                    valuableInfo.putInt("position", mMediaPlayer.getCurrentPosition());
+                    valuableInfo.putInt("duration", mMediaPlayer.getDuration());
+                    mMediaSessionCompat.sendSessionEvent("sureRefreshIt!", valuableInfo);
+                    break;
+            }
+        }
     };
 
     @Nullable
@@ -223,10 +232,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             case AudioManager.AUDIOFOCUS_LOSS: {
                 if(mMediaPlayer.isPlaying()){
                     mMediaPlayer.stop();
-
                     mMediaSessionCompat.sendSessionEvent("lostAudioFocus", null);
-                    mMediaSessionCompat.sendSessionEvent("killSeekBarTask", null);
-
                 }
                 break;
             }

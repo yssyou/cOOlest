@@ -1,4 +1,4 @@
-package com.example.rayku.tutorial21;
+package com.example.rayku.coolest;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.util.concurrent.ThreadPoolExecutor;
-
 public class SongFragment extends Fragment implements View.OnClickListener {
 
     public static final String TITLE = "PLAYBACK";
@@ -23,8 +21,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     TextView songSongTitle, songSongArtist;
 
     SeekBar seekBar;
-    SeekBarTask seekBarTask;
-    ThreadPoolExecutor threadPoolExecutor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,7 +54,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setUpLayout();
-        threadPoolExecutor = mListener.getThreadPoolExecutor();
     }
 
     interface OnFragmentInteractionListener {
@@ -66,11 +61,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         void playPrev(View view);
         void playNext(View view);
         void playPause(View view);
-        ThreadPoolExecutor getThreadPoolExecutor();
         int getCurrentState();
         Song getCurrentSong();
-        long getCurrentTime();
-        void setTimeOnSeekBarChange(int i);
         void loop();
         int getCurrentLoop();
         void rand();
@@ -104,7 +96,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                     if(fromUser){
                         mListener.changeFromSeekBar(i);
                         seekBar.setProgress(i);
-                        mListener.setTimeOnSeekBarChange(i);
+                        mListener.changeFromSeekBar(i);
                     }
                 }
                 @Override
@@ -130,39 +122,18 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         super.onResume();
         Song currentSong = mListener.getCurrentSong();
         updateInterface(currentSong);
-        int aTime = (int)mListener.getCurrentTime();
 
         if (mListener.getCurrentState() == 1){
-            refreshSeekBarTask(currentSong.getDuration(), aTime);
             playBtn.setBackgroundResource(R.drawable.pause);
         }else{
-            seekBar.setMax(currentSong.getDuration());
-            seekBar.setProgress(aTime);
             playBtn.setBackgroundResource(R.drawable.play);
         }
-
         if (mListener.getCurrentLoop() == 1) loopBtn.setBackgroundResource(R.drawable.loop);
         else loopBtn.setBackgroundResource(R.drawable.loop_faded);
 
         if (mListener.getCurrentRand() == 1) randBtn.setBackgroundResource(R.drawable.rand);
         else randBtn.setBackgroundResource(R.drawable.rand_faded);
 
-    }
-
-    public void refreshSeekBarTask(int max, int progress){
-        killSeekBarTask();
-
-        seekBar.setMax(max);
-        if(progress != -1) {
-            seekBar.setProgress(progress);
-        }
-        seekBarTask = new SeekBarTask();
-        seekBarTask.executeOnExecutor(threadPoolExecutor, seekBar);
-    }
-    public void killSeekBarTask(){
-        if(seekBarTask != null) {
-            seekBarTask.cancel(true);
-        }
     }
 
     public void updateBtnOnPlay(){ playBtn.setBackgroundResource(R.drawable.pause); }
@@ -191,6 +162,11 @@ public class SongFragment extends Fragment implements View.OnClickListener {
                 mListener.rand();
                 break;
         }
+    }
+
+    public void refreshSeekBar(int progress, int duration){
+        seekBar.setMax(duration);
+        seekBar.setProgress(progress);
     }
 
 }

@@ -1,7 +1,6 @@
-package com.example.rayku.tutorial21;
+package com.example.rayku.coolest;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
