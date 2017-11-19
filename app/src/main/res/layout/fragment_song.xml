@@ -17,17 +17,20 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintTop_creator="1">
 
-        <SeekBar android:id="@+id/seekBar"
+        <SeekBar
+            android:id="@+id/seekBar"
             android:layout_width="320dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:thumb="@color/colorAccent"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="@+id/songGridLayout"
             app:layout_constraintRight_toRightOf="@+id/songGridLayout"
+            app:layout_constraintTop_toBottomOf="@+id/songGridLayout"
             tools:layout_constraintBottom_creator="1"
             tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintRight_creator="1"/>
+            tools:layout_constraintRight_creator="1" />
 
         <GridLayout android:id="@+id/songGridLayout"
             android:layout_width="wrap_content"
@@ -44,8 +47,9 @@
                 android:layout_column="0"
                 android:layout_row="0"
 
-                android:layout_width="match_parent"
-                android:layout_height="40sp"
+                android:layout_width="260dp"
+
+                android:layout_gravity="center_horizontal"
 
                 android:singleLine="true"
                 android:ellipsize="marquee"
@@ -55,7 +59,7 @@
                 android:scrollHorizontally="true"
 
                 android:textColor="@android:color/black"
-                android:textSize="32sp"
+                android:textSize="28sp"
                 android:textStyle="bold"/>
 
             <TextView android:id="@+id/song_song_artist"
@@ -64,7 +68,7 @@
                 android:layout_column="0"
                 android:layout_row="1"
                 android:gravity="center"
-                android:maxHeight="24dp"
+                android:maxHeight="20dp"
                 android:textColor="@android:color/black"
                 android:textSize="20sp"/>
 
@@ -94,22 +98,19 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
-                android:background="@drawable/prev"
-                android:onClick="playPrevSong"/>
+                android:background="@drawable/prev" />
 
             <Button android:id="@+id/playBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
-                android:background="@drawable/play"
-                android:onClick="playPause"/>
+                android:background="@drawable/play" />
 
             <Button android:id="@+id/nextBtn"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
-                android:background="@drawable/next"
-                android:onClick="playNextSong"/>
+                android:background="@drawable/next" />
 
             <Button android:id="@+id/randBtn"
                 android:layout_width="80dp"

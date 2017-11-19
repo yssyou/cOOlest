@@ -161,11 +161,9 @@ MyListsFragment.OnFragmentInteractionListener {
                 case "lostAudioFocus":
                     playPause(null);
                     break;
-
                 case "sureRefreshIt!":
-                    if(songFragment!=null){
+                    if(songFragment!=null)
                         songFragment.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
-                    }
                     break;
             }
         }
@@ -247,7 +245,7 @@ MyListsFragment.OnFragmentInteractionListener {
         newListLayout = findViewById(R.id.newListLayout);
         newListLayout.setVisibility(View.INVISIBLE);
 
-        typeFace = Typeface.createFromAsset(getAssets(), "Amatic-Bold.ttf");
+        typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
 
         bg1 = findViewById(R.id.bg1);
         bg2 = findViewById(R.id.bg2);
@@ -262,7 +260,7 @@ MyListsFragment.OnFragmentInteractionListener {
             }
         }
 
-        sharedPreferences = this.getSharedPreferences("com.example.rayku.tutorial21", Context.MODE_PRIVATE);
+        sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());

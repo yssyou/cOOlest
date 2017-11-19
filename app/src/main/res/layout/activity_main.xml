@@ -113,7 +113,7 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="Which songs do you want in this playlist?"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
 
         <ListView
             android:id="@+id/listToNew"
@@ -127,7 +127,7 @@
             android:background="#00000000"
             android:onClick="createNewList"
             android:text="CREATE!"
-            android:textSize="30sp" />
+            android:textSize="26sp" />
 
     </LinearLayout>
 

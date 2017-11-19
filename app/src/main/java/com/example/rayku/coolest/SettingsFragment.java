@@ -25,7 +25,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+        typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Ubuntu-C.ttf");
 
     }
 

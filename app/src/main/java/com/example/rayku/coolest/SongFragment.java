@@ -85,7 +85,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
             songSongTitle = rootView.findViewById(R.id.song_song_title);
             songSongArtist = rootView.findViewById(R.id.song_song_artist);
-            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Amatic-Bold.ttf");
+            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Ubuntu-C.ttf");
             songSongTitle.setTypeface(typeFace);
             songSongArtist.setTypeface(typeFace);
 
