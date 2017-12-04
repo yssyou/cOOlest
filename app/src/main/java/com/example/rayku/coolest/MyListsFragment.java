@@ -1,6 +1,7 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -66,10 +67,15 @@ public class MyListsFragment extends Fragment{
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(view.getBackground()==null) {
+                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                } else view.setBackground(null);
                 mListener.setList(listsGridView.getItemAtPosition(i).toString());
             }
         });
+
     }
+
 
     @Override
     public void onDetach() {

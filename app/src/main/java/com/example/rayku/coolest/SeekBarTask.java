@@ -22,6 +22,5 @@ public class SeekBarTask extends AsyncTask<MediaControllerCompat.TransportContro
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
         tpControls.sendCustomAction("refreshSeekBarPlz", null);
-
     }
 }

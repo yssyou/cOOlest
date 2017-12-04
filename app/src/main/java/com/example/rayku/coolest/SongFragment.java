@@ -133,7 +133,6 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
         if (mListener.getCurrentRand() == 1) randBtn.setBackgroundResource(R.drawable.rand);
         else randBtn.setBackgroundResource(R.drawable.rand_faded);
-
     }
 
     public void updateBtnOnPlay(){ playBtn.setBackgroundResource(R.drawable.pause); }

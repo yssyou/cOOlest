@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.session.MediaController;
 import android.net.Uri;
 import android.os.Build;
 import android.os.RemoteException;
@@ -32,11 +31,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,9 +63,13 @@ MyListsFragment.OnFragmentInteractionListener {
 
     ArrayList<Song> arrayList;
     HashMap<String, ArrayList<Long>> lists;
+    String currentList = "MAIN";
+
+    ListView listToNew;
+    ArrayList<Long> theIndexes;
 
     static Song currentSong;
-    int currentIndex;
+    int currentIndex, currentAuxIndex;
 
     ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor mThreadPoolExecutor;
@@ -237,10 +240,9 @@ MyListsFragment.OnFragmentInteractionListener {
         setContentView(R.layout.activity_main);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-
-        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
-
+        
         mainLayout = findViewById(R.id.mainLayout);
         newListLayout = findViewById(R.id.newListLayout);
         newListLayout.setVisibility(View.INVISIBLE);
@@ -283,6 +285,17 @@ MyListsFragment.OnFragmentInteractionListener {
         retrieveSongList();
         setupListsView();
 
+        listToNew = findViewById(R.id.listToNew);
+        theIndexes = new ArrayList<>();
+
+        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                theIndexes.add(arrayList.get(i).getId());
+                Toast.makeText(getApplicationContext(), "Succesfully added " + Integer.toString(i), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void customizeTabLayout() {
@@ -323,6 +336,7 @@ MyListsFragment.OnFragmentInteractionListener {
                 long id = c.getLong(idIndex);// does this work? the getFloat?
                 if(!lists.keySet().contains(listName)){
                     lists.put(listName, new ArrayList<Long>());
+                    Log.i("PUTAMIERDA", "Succesfully added something omfg");
                 }else{
                     lists.get(listName).add(id);
                 }
@@ -338,15 +352,10 @@ MyListsFragment.OnFragmentInteractionListener {
     public void createNewList(View view){
 
         String nameInput = newName.getText().toString();
-        ArrayList<Long> theIndexes = new ArrayList<>();
-
-        theIndexes.add(arrayList.get(5).getId());
-        theIndexes.add(arrayList.get(6).getId());
-        theIndexes.add(arrayList.get(7).getId());
 
         try{
             for(long anIndex : theIndexes){
-                String stringToAddIndex = "INSERT INTO lists (name, idx) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
+                String stringToAddIndex = "INSERT INTO lists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
                 SQLiteDB.execSQL(stringToAddIndex);
             }
         }catch(Exception e){
@@ -361,7 +370,28 @@ MyListsFragment.OnFragmentInteractionListener {
         if(myListsFragment != null) {
             myListsFragment.updateInterface();
         }
+
+        theIndexes = new ArrayList<>(); // we refresh theIndexes for a new list
     }
+
+    public void setList(String listName){
+        if(listName.equals("+")){
+            mainLayout.setVisibility(View.INVISIBLE);
+            newListLayout.setVisibility(View.VISIBLE);
+        }else if(listName.equals(currentList)){
+            currentList = "MAIN";
+        } else{
+            currentList = listName;
+        }
+        currentAuxIndex = 0;
+    }
+
+    public int getCurrentIndex(Long id){
+        for(int i=0; i<arrayList.size(); i++)
+            if(arrayList.get(i).getId() == id) return i;
+        return 0;
+    }
+
 
     private void retrieveSongList(){
         arrayList = new ArrayList<>();
@@ -399,7 +429,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public void playSong(int i){
 
-        if(seekBarTask == null){ // had to start it here due to a weird interaction
+        if(seekBarTask == null){
             seekBarTask = new SeekBarTask();
             seekBarTask.executeOnExecutor(mThreadPoolExecutor, tpControls);
         }
@@ -423,16 +453,33 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void playPrev(View view){
-        if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
-        else if(currentIndex < 1) currentIndex = arrayList.size()-1;
-        else --currentIndex;
+
+        if(currentList.equals("MAIN")) {
+            if (mCurrentRand == RAND) currentIndex = (int) (Math.random() * arrayList.size());
+            else if (currentIndex < 1) currentIndex = arrayList.size() - 1;
+            else --currentIndex;
+        } else{
+            ArrayList<Long> currList = lists.get(currentList);
+            if(currentAuxIndex==0) currentAuxIndex = currList.size()-1;
+            else currentAuxIndex--;
+            currentIndex = getCurrentIndex(currList.get(currentAuxIndex));
+        }
         playSong(currentIndex);
     }
 
     public void playNext(View view){
-        if(mCurrentRand == RAND) currentIndex = (int)(Math.random()*arrayList.size());
-        else if(currentIndex == arrayList.size()-1) currentIndex = 0;
-        else ++currentIndex;
+
+        if(currentList.equals("MAIN")) {
+            if (mCurrentRand == RAND) currentIndex = (int) (Math.random() * arrayList.size());
+            else if (currentIndex == arrayList.size() - 1) currentIndex = 0;
+            else ++currentIndex;
+            playSong(currentIndex);
+        } else{
+            ArrayList<Long> currList = lists.get(currentList);
+            if(currentAuxIndex == currList.size() - 1) currentAuxIndex = 0;
+            else currentAuxIndex++;
+            currentIndex = getCurrentIndex(currList.get(currentAuxIndex));
+        }
         playSong(currentIndex);
     }
 
@@ -491,7 +538,6 @@ MyListsFragment.OnFragmentInteractionListener {
     protected void onPause() {
         super.onPause();
         if(colorTask4!=null) colorTask4.killLightColorTask();
-        if(seekBarTask!=null) seekBarTask.cancel(true);
     }
 
     @Override
@@ -502,9 +548,7 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void switchTheme(int i){
-
         sharedPreferences.edit().putInt("theme", i).apply();
-
         switch(i){
             case 0:
                 if(colorTask4!=null){
@@ -522,15 +566,6 @@ MyListsFragment.OnFragmentInteractionListener {
                 break;
         }
 
-    }
-
-    public void setList(String listName){
-        if(listName.equals("+")){
-            mainLayout.setVisibility(View.INVISIBLE);
-            newListLayout.setVisibility(View.VISIBLE);
-        }else{
-
-        }
     }
 
     @Override
