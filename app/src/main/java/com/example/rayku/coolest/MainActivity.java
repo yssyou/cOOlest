@@ -56,23 +56,23 @@ MyListsFragment.OnFragmentInteractionListener {
     private static final int NOT_RAND = 0;
     private static final int RAND = 1;
 
-    private int mCurrentState, mCurrentLoop, mCurrentRand;
+    private int currState, currLoop, currRand;
 
-    private MediaBrowserCompat mMediaBrowserCompat;
+    private MediaBrowserCompat mediaBrowserCompat;
     private MediaControllerCompat.TransportControls tpControls;
 
-    ArrayList<Song> arrayList;
-    HashMap<String, ArrayList<Long>> lists;
-    String currentList = "MAIN";
+    ArrayList<Song> songsList;
+    HashMap<String, ArrayList<Long>> customLists;
+    String currList = "MAIN";
 
     ListView listToNew;
     ArrayList<Long> theIndexes;
 
-    static Song currentSong;
-    int currentIndex, currentAuxIndex;
+    static Song currSong;
+    int currIdx, auxIdx;
 
     ArrayBlockingQueue<Runnable> queue;
-    ThreadPoolExecutor mThreadPoolExecutor;
+    ThreadPoolExecutor threadPoolExecutor;
     ColorTask4 colorTask4;
     SeekBarTask seekBarTask;
 
@@ -81,7 +81,7 @@ MyListsFragment.OnFragmentInteractionListener {
     private SongFragment songFragment;
     private MyListsFragment myListsFragment;
 
-    private TabLayout mTabLayout;
+    private TabLayout tabLayout;
 
     private static final int PERMISSION_REQUEST_CODE = 1;
 
@@ -97,14 +97,14 @@ MyListsFragment.OnFragmentInteractionListener {
 
     SQLiteDatabase SQLiteDB;
 
-    private MediaBrowserCompat.ConnectionCallback mMediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
+    private MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
         @Override
         public void onConnected() {
             super.onConnected();
             try {
-                MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mMediaBrowserCompat.getSessionToken());
-                mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
+                MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mediaBrowserCompat.getSessionToken());
+                mMediaControllerCompat.registerCallback(mediaControllerCompatCallback);
 
                 MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
                 tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
@@ -113,7 +113,7 @@ MyListsFragment.OnFragmentInteractionListener {
         }
     };
 
-    private MediaControllerCompat.Callback mMediaControllerCompatCallback = new MediaControllerCompat.Callback() {
+    private MediaControllerCompat.Callback mediaControllerCompatCallback = new MediaControllerCompat.Callback() {
 
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
@@ -123,7 +123,7 @@ MyListsFragment.OnFragmentInteractionListener {
             }
             switch (state.getState()) {
                 case PlaybackStateCompat.STATE_PLAYING: {
-                    mCurrentState = STATE_PLAYING;
+                    currState = STATE_PLAYING;
                     if (listFragment != null) {
                         listFragment.updateBtnOnPlay();
                     }
@@ -133,7 +133,7 @@ MyListsFragment.OnFragmentInteractionListener {
                     break;
                 }
                 case PlaybackStateCompat.STATE_PAUSED: {
-                    mCurrentState = STATE_PAUSED;
+                    currState = STATE_PAUSED;
                     if (listFragment != null) {
                         listFragment.updateBtnOnPause();
                     }
@@ -156,8 +156,8 @@ MyListsFragment.OnFragmentInteractionListener {
                     playNext(null);
                     break;
                 case "songFinished":
-                    if(mCurrentLoop==LOOPING)
-                        playSong(currentIndex);
+                    if(currLoop ==LOOPING)
+                        playSong(currIdx);
                     else
                         playNext(null);
                     break;
@@ -240,9 +240,9 @@ MyListsFragment.OnFragmentInteractionListener {
         setContentView(R.layout.activity_main);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS customLists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
-        
+
         mainLayout = findViewById(R.id.mainLayout);
         newListLayout = findViewById(R.id.newListLayout);
         newListLayout.setVisibility(View.INVISIBLE);
@@ -270,17 +270,16 @@ MyListsFragment.OnFragmentInteractionListener {
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
-        mTabLayout = findViewById(R.id.tab);
-        mTabLayout.setupWithViewPager(mViewPager);
+        tabLayout = findViewById(R.id.tab);
+        tabLayout.setupWithViewPager(mViewPager);
         customizeTabLayout();
 
         queue = new ArrayBlockingQueue<>(6);
-        mThreadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
+        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
 
-        mMediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
-                mMediaBrowserCompatConnectionCallback, getIntent().getExtras());
-
-        mMediaBrowserCompat.connect();
+        mediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
+                mediaBrowserCompatConnectionCallback, getIntent().getExtras());
+        mediaBrowserCompat.connect();
 
         retrieveSongList();
         setupListsView();
@@ -291,15 +290,21 @@ MyListsFragment.OnFragmentInteractionListener {
         listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                theIndexes.add(arrayList.get(i).getId());
-                Toast.makeText(getApplicationContext(), "Succesfully added " + Integer.toString(i), Toast.LENGTH_SHORT).show();
+
+                if(view.getBackground()==null) {
+                    theIndexes.add(songsList.get(i).getId());
+                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                } else{
+                    theIndexes.remove(songsList.get(i).getId());
+                    view.setBackground(null);
+                }
             }
         });
 
     }
 
     private void customizeTabLayout() {
-        ViewGroup vg = (ViewGroup) mTabLayout.getChildAt(0);
+        ViewGroup vg = (ViewGroup) tabLayout.getChildAt(0);
         for (int j=0; j<vg.getChildCount(); j++) {
             ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
             for (int i = 0; i < vgTab.getChildCount(); i++) {
@@ -312,10 +317,10 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     private void setupListsView(){
-        lists = new HashMap<>();
-        lists.put("+", new ArrayList<Long>());
+        customLists = new HashMap<>();
+        customLists.put("+", new ArrayList<Long>());
 
-        SongsListAdapter adapter = new SongsListAdapter(this, arrayList, typeFace);
+        SongsListAdapter adapter = new SongsListAdapter(this, songsList, typeFace);
         ListView listView = findViewById(R.id.listToNew);
         listView.setAdapter(adapter);
 
@@ -334,12 +339,9 @@ MyListsFragment.OnFragmentInteractionListener {
             while(c!=null){
                 String listName = c.getString(nameIndex);
                 long id = c.getLong(idIndex);// does this work? the getFloat?
-                if(!lists.keySet().contains(listName)){
-                    lists.put(listName, new ArrayList<Long>());
-                    Log.i("PUTAMIERDA", "Succesfully added something omfg");
-                }else{
-                    lists.get(listName).add(id);
-                }
+                if(!customLists.keySet().contains(listName))
+                    customLists.put(listName, new ArrayList<Long>());
+                else customLists.get(listName).add(id);
                 c.moveToNext();
             }
 
@@ -355,14 +357,14 @@ MyListsFragment.OnFragmentInteractionListener {
 
         try{
             for(long anIndex : theIndexes){
-                String stringToAddIndex = "INSERT INTO lists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
+                String stringToAddIndex = "INSERT INTO customLists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
                 SQLiteDB.execSQL(stringToAddIndex);
             }
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        lists.put(nameInput, theIndexes);
+        customLists.put(nameInput, theIndexes);
 
         newListLayout.setVisibility(View.INVISIBLE);
         mainLayout.setVisibility(View.VISIBLE);
@@ -378,23 +380,22 @@ MyListsFragment.OnFragmentInteractionListener {
         if(listName.equals("+")){
             mainLayout.setVisibility(View.INVISIBLE);
             newListLayout.setVisibility(View.VISIBLE);
-        }else if(listName.equals(currentList)){
-            currentList = "MAIN";
+        }else if(listName.equals(currList)){
+            currList = "MAIN";
         } else{
-            currentList = listName;
+            currList = listName;
         }
-        currentAuxIndex = 0;
+        auxIdx = 0;
     }
 
-    public int getCurrentIndex(Long id){
-        for(int i=0; i<arrayList.size(); i++)
-            if(arrayList.get(i).getId() == id) return i;
+    public int getIdxFromId(Long id){
+        for(int i=0; i<songsList.size(); i++)
+            if(songsList.get(i).getId() == id) return i;
         return 0;
     }
 
-
     private void retrieveSongList(){
-        arrayList = new ArrayList<>();
+        songsList = new ArrayList<>();
 
         ContentResolver contentResolver = getContentResolver();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -418,25 +419,25 @@ MyListsFragment.OnFragmentInteractionListener {
                 int currentDuration = (int)cursor.getLong(duration);
 
                 if (currentMimeType.equals("audio/mpeg")) {
-                    arrayList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
+                    songsList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
                 }
             } while (cursor.moveToNext());
         }
 
-        currentIndex = 0;
-        currentSong = arrayList.get(currentIndex);
+        currIdx = 0;
+        currSong = songsList.get(currIdx);
     }
 
     public void playSong(int i){
 
         if(seekBarTask == null){
             seekBarTask = new SeekBarTask();
-            seekBarTask.executeOnExecutor(mThreadPoolExecutor, tpControls);
+            seekBarTask.executeOnExecutor(threadPoolExecutor, tpControls);
         }
 
-        currentIndex = i;
-        currentSong  = arrayList.get(i);
-        long currentId = currentSong.getId();
+        currIdx = i;
+        currSong = songsList.get(i);
+        long currentId = currSong.getId();
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currentId);
@@ -445,79 +446,79 @@ MyListsFragment.OnFragmentInteractionListener {
         tpControls.play();
 
         if(listFragment != null) {
-            listFragment.updateInterface(currentSong);
+            listFragment.updateInterface(currSong);
         }
         if(songFragment != null) {
-            songFragment.updateInterface(currentSong);
+            songFragment.updateInterface(currSong);
         }
     }
 
     public void playPrev(View view){
 
-        if(currentList.equals("MAIN")) {
-            if (mCurrentRand == RAND) currentIndex = (int) (Math.random() * arrayList.size());
-            else if (currentIndex < 1) currentIndex = arrayList.size() - 1;
-            else --currentIndex;
+        if(currList.equals("MAIN")) {
+            if (currRand == RAND) currIdx = (int) (Math.random() * songsList.size());
+            else if (currIdx < 1) currIdx = songsList.size() - 1;
+            else --currIdx;
         } else{
-            ArrayList<Long> currList = lists.get(currentList);
-            if(currentAuxIndex==0) currentAuxIndex = currList.size()-1;
-            else currentAuxIndex--;
-            currentIndex = getCurrentIndex(currList.get(currentAuxIndex));
+            ArrayList<Long> currList = customLists.get(this.currList);
+            if(auxIdx ==0) auxIdx = currList.size()-1;
+            else auxIdx--;
+            currIdx = getIdxFromId(currList.get(auxIdx));
         }
-        playSong(currentIndex);
+        playSong(currIdx);
     }
 
     public void playNext(View view){
 
-        if(currentList.equals("MAIN")) {
-            if (mCurrentRand == RAND) currentIndex = (int) (Math.random() * arrayList.size());
-            else if (currentIndex == arrayList.size() - 1) currentIndex = 0;
-            else ++currentIndex;
-            playSong(currentIndex);
+        if(currList.equals("MAIN")) {
+            if (currRand == RAND) currIdx = (int) (Math.random() * songsList.size());
+            else if (currIdx == songsList.size() - 1) currIdx = 0;
+            else ++currIdx;
+            playSong(currIdx);
         } else{
-            ArrayList<Long> currList = lists.get(currentList);
-            if(currentAuxIndex == currList.size() - 1) currentAuxIndex = 0;
-            else currentAuxIndex++;
-            currentIndex = getCurrentIndex(currList.get(currentAuxIndex));
+            ArrayList<Long> currList = customLists.get(this.currList);
+            if(auxIdx == currList.size() - 1) auxIdx = 0;
+            else auxIdx++;
+            currIdx = getIdxFromId(currList.get(auxIdx));
         }
-        playSong(currentIndex);
+        playSong(currIdx);
     }
 
     public void playPause(View view){
-        if( mCurrentState == STATE_PAUSED ) {
-            mCurrentState = STATE_PLAYING;
+        if( currState == STATE_PAUSED ) {
+            currState = STATE_PLAYING;
             tpControls.play();
         } else {
-            mCurrentState = STATE_PAUSED;
+            currState = STATE_PAUSED;
             tpControls.pause();
         }
     }
 
     public void loop(){
-        if(mCurrentLoop==LOOPING){
+        if(currLoop ==LOOPING){
             if(songFragment != null) {
                 songFragment.updateLoopOnOut();
             }
-            mCurrentLoop = NOT_LOOPING;
+            currLoop = NOT_LOOPING;
         }else{
             if(songFragment != null) {
                 songFragment.updateLoopOnIn();
             }
-            mCurrentLoop = LOOPING;
+            currLoop = LOOPING;
         }
     }
 
     public void rand(){
-        if(mCurrentRand==RAND){
+        if(currRand ==RAND){
             if(songFragment != null) {
                 songFragment.updateRandOnOut();
             }
-            mCurrentRand = NOT_RAND;
+            currRand = NOT_RAND;
         }else{
             if(songFragment != null) {
                 songFragment.updateRandOnIn();
             }
-            mCurrentRand = RAND;
+            currRand = RAND;
         }
     }
 
@@ -525,13 +526,13 @@ MyListsFragment.OnFragmentInteractionListener {
         tpControls.seekTo(i);
     }
 
-    public ArrayList<Song> getSongList() { return arrayList; }
-    public HashMap<String, ArrayList<Long>> getLists(){ return lists; }
+    public ArrayList<Song> getSongList() { return songsList; }
+    public HashMap<String, ArrayList<Long>> getCustomLists(){ return customLists; }
     public Typeface getTypeface(){ return typeFace; }
-    public Song getCurrentSong(){ return currentSong; }
-    public int getCurrentState(){ return mCurrentState; }
-    public int getCurrentLoop(){ return mCurrentLoop; }
-    public int getCurrentRand(){ return mCurrentRand; }
+    public Song getCurrentSong(){ return currSong; }
+    public int getCurrentState(){ return currState; }
+    public int getCurrentLoop(){ return currLoop; }
+    public int getCurrentRand(){ return currRand; }
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
 
     @Override
@@ -544,7 +545,7 @@ MyListsFragment.OnFragmentInteractionListener {
     protected void onResume() {
         super.onResume();
         if(sharedPreferences.getInt("theme", 666)==1)
-            colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+            colorTask4 = new ColorTask4(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
     }
 
     public void switchTheme(int i){
@@ -562,7 +563,7 @@ MyListsFragment.OnFragmentInteractionListener {
                 break;
             case 1:
                 if(colorTask4==null)
-                    colorTask4 = new ColorTask4(mThreadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+                    colorTask4 = new ColorTask4(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
                 break;
         }
 
@@ -580,8 +581,8 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mMediaBrowserCompat.disconnect();
-        mThreadPoolExecutor.shutdown();
+        mediaBrowserCompat.disconnect();
+        threadPoolExecutor.shutdown();
     }
 
     private boolean checkPermission() {

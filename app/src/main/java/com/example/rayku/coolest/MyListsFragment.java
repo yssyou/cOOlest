@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import java.util.HashMap;
 public class MyListsFragment extends Fragment{
 
     public static final String TITLE = "MY LISTS";
-
     private OnFragmentInteractionListener mListener;
 
     ArrayList<String> listsTitles;
@@ -59,7 +59,7 @@ public class MyListsFragment extends Fragment{
         listsGridView = getView().findViewById(R.id.listsGridView);
 
         listsTitles = new ArrayList<>();
-        listsTitles.addAll(mListener.getLists().keySet());
+        listsTitles.addAll(mListener.getCustomLists().keySet());
 
         adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface());
         listsGridView.setAdapter(adapter);
@@ -67,15 +67,18 @@ public class MyListsFragment extends Fragment{
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(view.getBackground()==null) {
-                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
-                } else view.setBackground(null);
                 mListener.setList(listsGridView.getItemAtPosition(i).toString());
             }
         });
 
+        listsGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getContext(), "WANNA DELETE OMFG", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
     }
-
 
     @Override
     public void onDetach() {
@@ -84,7 +87,7 @@ public class MyListsFragment extends Fragment{
     }
 
     interface OnFragmentInteractionListener {
-        HashMap<String, ArrayList<Long>> getLists();
+        HashMap<String, ArrayList<Long>> getCustomLists();
         void setList(String listName);
         Typeface getTypeface();
     }
