@@ -27,6 +27,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -96,6 +97,8 @@ MyListsFragment.OnFragmentInteractionListener {
     EditText newName;
 
     SQLiteDatabase SQLiteDB;
+
+    SongsListAdapter adapter;
 
     private MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -265,9 +268,9 @@ MyListsFragment.OnFragmentInteractionListener {
         sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
 
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         ViewPager mViewPager = findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setAdapter(sectionsPagerAdapter);
         mViewPager.setCurrentItem(1);
 
         tabLayout = findViewById(R.id.tab);
@@ -298,6 +301,20 @@ MyListsFragment.OnFragmentInteractionListener {
                     theIndexes.remove(songsList.get(i).getId());
                     view.setBackground(null);
                 }
+            }
+        });
+
+        adapter = new SongsListAdapter(this, songsList, typeFace);
+
+        SearchView searchView = findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) { return false; }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
             }
         });
 
@@ -534,6 +551,7 @@ MyListsFragment.OnFragmentInteractionListener {
     public int getCurrentLoop(){ return currLoop; }
     public int getCurrentRand(){ return currRand; }
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
+    public SongsListAdapter getAdapter(){ return adapter; }
 
     @Override
     protected void onPause() {

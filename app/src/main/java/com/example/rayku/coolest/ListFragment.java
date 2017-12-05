@@ -24,7 +24,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     TextView playingSongTitle, playingSongArtist;
 
     ArrayList<Song> arrayList;
-    SongsListAdapter adapter;
 
     public static final String TITLE = "PLAYLIST";
 
@@ -43,7 +42,6 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         arrayList = mListener.getSongList();
-        adapter = new SongsListAdapter(getContext(), arrayList, mListener.getTypeface());
     }
 
     @Override
@@ -74,7 +72,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         listPlayBtn.setOnClickListener(this);
 
         ListView listView = rootView.findViewById(R.id.listView);
-        listView.setAdapter(adapter);
+        listView.setAdapter(mListener.getAdapter());
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -99,6 +97,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         Song getCurrentSong();
         int getCurrentState();
         Typeface getTypeface();
+        SongsListAdapter getAdapter();
     }
 
     public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }

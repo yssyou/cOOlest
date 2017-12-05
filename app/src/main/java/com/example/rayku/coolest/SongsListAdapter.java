@@ -6,19 +6,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-class SongsListAdapter extends BaseAdapter {
+class SongsListAdapter extends BaseAdapter implements Filterable{
     private Context context;
-    private ArrayList<Song> arrayList;
+    private ArrayList<Song> originalData;
+    private ArrayList<Song> filteredData;
     private Typeface typeFace;
 
-    SongsListAdapter(Context context, ArrayList<Song> arrayList, Typeface typeFace){
+    SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace){
         this.context = context;
-        this.arrayList = arrayList;
+        this.originalData = originalData;
+        filteredData = originalData;
         this.typeFace = typeFace;
     }
 
@@ -61,17 +65,47 @@ class SongsListAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() {
-        return arrayList.size();
-    }
+    public int getCount() { return filteredData.size(); }
 
     @Override
-    public Object getItem(int position) {
-        return arrayList.get(position);
-    }
+    public Object getItem(int position) { return filteredData.get(position); }
 
     @Override
     public long getItemId(int position) {
         return position;
     }
+
+    @Override
+    public Filter getFilter() {
+
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+
+                FilterResults filterResults = new FilterResults();
+
+                if(charSequence==null || charSequence.length()==0){
+                    filterResults.values = originalData;
+                    filterResults.count = originalData.size();
+                } else{
+                    ArrayList<Song> filterResultsData = new ArrayList<>();
+                    for(Song song : originalData){
+                        if(song.getTitle().toLowerCase().contains(charSequence.toString().toLowerCase())){
+                            filterResultsData.add(song);
+                        }
+                    }
+                    filterResults.values = filterResultsData;
+                    filterResults.count = filterResultsData.size();
+                }
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredData = (ArrayList<Song>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
 }
