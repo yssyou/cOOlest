@@ -76,7 +76,8 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mListener.playSong(i);
+                Song s = (Song)adapterView.getItemAtPosition(i);
+                mListener.playSong(mListener.getIdxFromId(s.getId()));
             }
         });
 
@@ -98,6 +99,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         int getCurrentState();
         Typeface getTypeface();
         SongsListAdapter getAdapter();
+        int getIdxFromId(long id);
     }
 
     public void updateBtnOnPlay(){ listPlayBtn.setBackgroundResource(R.drawable.pause); }

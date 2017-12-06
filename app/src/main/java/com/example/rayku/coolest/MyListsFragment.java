@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -61,13 +62,20 @@ public class MyListsFragment extends Fragment{
         listsTitles = new ArrayList<>();
         listsTitles.addAll(mListener.getCustomLists().keySet());
 
-        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface());
+        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList());
+
         listsGridView.setAdapter(adapter);
 
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mListener.setList(listsGridView.getItemAtPosition(i).toString());
+
+                if(view.getBackground()==null && i!=0) {
+                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                } else{
+                    view.setBackground(null);
+                }
             }
         });
 
@@ -78,6 +86,7 @@ public class MyListsFragment extends Fragment{
                 return false;
             }
         });
+
     }
 
     @Override
@@ -90,5 +99,6 @@ public class MyListsFragment extends Fragment{
         HashMap<String, ArrayList<Long>> getCustomLists();
         void setList(String listName);
         Typeface getTypeface();
+        String getCurrList();
     }
 }

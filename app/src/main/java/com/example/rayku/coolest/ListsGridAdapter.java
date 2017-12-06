@@ -1,6 +1,7 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +16,14 @@ class ListsGridAdapter extends BaseAdapter {
 
     private Context context;
     private Typeface typeFace;
-
     private ArrayList<String> listsTitles;
+    private String currList;
 
-    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace){
+    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace, String currList){
         this.context = context;
         this.listsTitles = listsTitles;
         this.typeFace = typeFace;
+        this.currList = currList;
         Collections.sort(listsTitles);
     }
 
@@ -40,6 +42,10 @@ class ListsGridAdapter extends BaseAdapter {
             viewHolder = new ViewHolder(view);
             viewHolder.listTitle.setTypeface(typeFace);
             view.setTag(viewHolder);
+
+            if(listsTitles.get(i).equals(currList))
+                view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+
         } else {
             viewHolder = (ViewHolder)view.getTag();
         }

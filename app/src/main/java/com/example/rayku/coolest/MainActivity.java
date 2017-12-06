@@ -66,8 +66,7 @@ MyListsFragment.OnFragmentInteractionListener {
     HashMap<String, ArrayList<Long>> customLists;
     String currList = "MAIN";
 
-    ListView listToNew;
-    ArrayList<Long> theIndexes;
+    ArrayList<Long> theIDs;
 
     static Song currSong;
     int currIdx, auxIdx;
@@ -243,7 +242,7 @@ MyListsFragment.OnFragmentInteractionListener {
         setContentView(R.layout.activity_main);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        //SQLiteDB.execSQL("DROP TABLE IF EXISTS customLists");
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
         mainLayout = findViewById(R.id.mainLayout);
@@ -252,10 +251,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
         typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
 
-        bg1 = findViewById(R.id.bg1);
-        bg2 = findViewById(R.id.bg2);
-        bg3 = findViewById(R.id.bg3);
-        bg4 = findViewById(R.id.bg4);
+        bg1 = findViewById(R.id.bg1); bg2 = findViewById(R.id.bg2); bg3 = findViewById(R.id.bg3);  bg4 = findViewById(R.id.bg4);
 
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkPermission()) {
@@ -269,12 +265,12 @@ MyListsFragment.OnFragmentInteractionListener {
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
 
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager mViewPager = findViewById(R.id.container);
-        mViewPager.setAdapter(sectionsPagerAdapter);
-        mViewPager.setCurrentItem(1);
+        ViewPager viewPager = findViewById(R.id.container);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setCurrentItem(1);
 
         tabLayout = findViewById(R.id.tab);
-        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setupWithViewPager(viewPager);
         customizeTabLayout();
 
         queue = new ArrayBlockingQueue<>(6);
@@ -285,32 +281,13 @@ MyListsFragment.OnFragmentInteractionListener {
         mediaBrowserCompat.connect();
 
         retrieveSongList();
-        setupListsView();
-
-        listToNew = findViewById(R.id.listToNew);
-        theIndexes = new ArrayList<>();
-
-        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                if(view.getBackground()==null) {
-                    theIndexes.add(songsList.get(i).getId());
-                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
-                } else{
-                    theIndexes.remove(songsList.get(i).getId());
-                    view.setBackground(null);
-                }
-            }
-        });
-
         adapter = new SongsListAdapter(this, songsList, typeFace);
+        setupListsView();
 
         SearchView searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
@@ -337,9 +314,8 @@ MyListsFragment.OnFragmentInteractionListener {
         customLists = new HashMap<>();
         customLists.put("+", new ArrayList<Long>());
 
-        SongsListAdapter adapter = new SongsListAdapter(this, songsList, typeFace);
-        ListView listView = findViewById(R.id.listToNew);
-        listView.setAdapter(adapter);
+        ListView listToNew = findViewById(R.id.listToNew);
+        listToNew.setAdapter(adapter);
 
         ((TextView)findViewById(R.id.textView)).setTypeface(typeFace);
 
@@ -366,6 +342,30 @@ MyListsFragment.OnFragmentInteractionListener {
             e.printStackTrace();
         }
 
+        theIDs = new ArrayList<>();
+
+        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Song s = (Song)adapterView.getItemAtPosition(i);
+
+                if(view.getBackground()==null) {
+
+                    //theIDs.add(songsList.get(i).getId());
+                    theIDs.add(s.getId());
+
+
+                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                } else{
+                    //theIDs.remove(songsList.get(i).getId());
+                    theIDs.remove(s.getId());
+
+                    view.setBackground(null);
+                }
+            }
+        });
+
     }
 
     public void createNewList(View view){
@@ -373,15 +373,15 @@ MyListsFragment.OnFragmentInteractionListener {
         String nameInput = newName.getText().toString();
 
         try{
-            for(long anIndex : theIndexes){
-                String stringToAddIndex = "INSERT INTO customLists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
+            for(long anIndex : theIDs){
+                String stringToAddIndex = "INSERT INTO lists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
                 SQLiteDB.execSQL(stringToAddIndex);
             }
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        customLists.put(nameInput, theIndexes);
+        customLists.put(nameInput, theIDs);
 
         newListLayout.setVisibility(View.INVISIBLE);
         mainLayout.setVisibility(View.VISIBLE);
@@ -390,12 +390,11 @@ MyListsFragment.OnFragmentInteractionListener {
             myListsFragment.updateInterface();
         }
 
-        theIndexes = new ArrayList<>(); // we refresh theIndexes for a new list
+        theIDs = new ArrayList<>(); // we refresh theIDs for a new list
     }
 
     public void setList(String listName){
         if(listName.equals("+")){
-            mainLayout.setVisibility(View.INVISIBLE);
             newListLayout.setVisibility(View.VISIBLE);
         }else if(listName.equals(currList)){
             currList = "MAIN";
@@ -405,7 +404,7 @@ MyListsFragment.OnFragmentInteractionListener {
         auxIdx = 0;
     }
 
-    public int getIdxFromId(Long id){
+    public int getIdxFromId(long id){
         for(int i=0; i<songsList.size(); i++)
             if(songsList.get(i).getId() == id) return i;
         return 0;
@@ -543,16 +542,6 @@ MyListsFragment.OnFragmentInteractionListener {
         tpControls.seekTo(i);
     }
 
-    public ArrayList<Song> getSongList() { return songsList; }
-    public HashMap<String, ArrayList<Long>> getCustomLists(){ return customLists; }
-    public Typeface getTypeface(){ return typeFace; }
-    public Song getCurrentSong(){ return currSong; }
-    public int getCurrentState(){ return currState; }
-    public int getCurrentLoop(){ return currLoop; }
-    public int getCurrentRand(){ return currRand; }
-    public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
-    public SongsListAdapter getAdapter(){ return adapter; }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -589,11 +578,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
     @Override
     public void onBackPressed() {
-        if(newListLayout.getVisibility()== View.VISIBLE){
-            newListLayout.setVisibility(View.INVISIBLE);
-            mainLayout.setVisibility(View.VISIBLE);
-        } else
-            moveTaskToBack(true);
+        if(newListLayout.getVisibility()== View.VISIBLE) newListLayout.setVisibility(View.INVISIBLE);
+        else moveTaskToBack(true);
     }
 
     @Override
@@ -626,5 +612,15 @@ MyListsFragment.OnFragmentInteractionListener {
         }
     }
 
+    public ArrayList<Song> getSongList() { return songsList; }
+    public HashMap<String, ArrayList<Long>> getCustomLists(){ return customLists; }
+    public Typeface getTypeface(){ return typeFace; }
+    public Song getCurrentSong(){ return currSong; }
+    public int getCurrentState(){ return currState; }
+    public int getCurrentLoop(){ return currLoop; }
+    public int getCurrentRand(){ return currRand; }
+    public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
+    public SongsListAdapter getAdapter(){ return adapter; }
+    public String getCurrList(){ return currList; }
 
 }

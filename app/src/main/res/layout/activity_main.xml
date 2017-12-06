@@ -63,8 +63,7 @@
         tools:layout_constraintTop_creator="1"/>
 
 
-    <LinearLayout
-        android:id="@+id/mainLayout"
+    <LinearLayout android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -90,7 +89,9 @@
     <LinearLayout
         android:id="@+id/newListLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="460dp"
+        android:layout_marginTop="50dp"
+        android:background="@android:color/background_light"
         android:orientation="vertical">
 
         <EditText
@@ -100,7 +101,7 @@
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="0dp"
             android:gravity="center"
             android:hint="NAME" />
 
@@ -108,10 +109,10 @@
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="5dp"
             android:gravity="center"
             android:text="Which songs do you want in this playlist?"
             android:textSize="16sp" />
@@ -119,7 +120,7 @@
         <ListView
             android:id="@+id/listToNew"
             android:layout_width="match_parent"
-            android:layout_height="320dp" />
+            android:layout_height="300dp" />
 
         <Button
             android:id="@+id/createButton"

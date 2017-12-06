@@ -46,10 +46,8 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
         if(view == null){
             view = LayoutInflater.from(context).inflate(R.layout.song, viewGroup, false);
             viewHolder = new ViewHolder(view);
-
             viewHolder.songTitle.setTypeface(typeFace);
             viewHolder.songArtist.setTypeface(typeFace);
-
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder)view.getTag();
