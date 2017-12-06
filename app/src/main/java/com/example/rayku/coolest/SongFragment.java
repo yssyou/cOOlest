@@ -1,6 +1,7 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,10 +18,14 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View rootView, playBtn, prevBtn, nextBtn, loopBtn, randBtn;
+    View playBtn, prevBtn, nextBtn, loopBtn, randBtn;
     TextView songSongTitle, songSongArtist;
 
     SeekBar seekBar;
+
+    int currLoopDraw, currLoop_fadedDraw, currNextDraw, currPauseDraw,
+    currPlayDraw, currPrevDraw, currRandDraw, currRand_fadedDraw;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -29,8 +34,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_song, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_song, container, false);
     }
 
     @Override
@@ -54,6 +58,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setUpLayout();
+        updateTheme();
     }
 
     interface OnFragmentInteractionListener {
@@ -67,48 +72,75 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         int getCurrentLoop();
         void rand();
         int getCurrentRand();
+        int getSpTheme();
     }
 
     public void setUpLayout() {
-        rootView = getView();
-        if(rootView != null) {
-            playBtn = rootView.findViewById(R.id.playBtn);
-            prevBtn = rootView.findViewById(R.id.prevBtn);
-            nextBtn = rootView.findViewById(R.id.nextBtn);
-            loopBtn = rootView.findViewById(R.id.loopBtn);
-            randBtn = rootView.findViewById(R.id.randBtn);
-            playBtn.setOnClickListener(this);
-            prevBtn.setOnClickListener(this);
-            nextBtn.setOnClickListener(this);
-            loopBtn.setOnClickListener(this);
-            randBtn.setOnClickListener(this);
 
-            songSongTitle = rootView.findViewById(R.id.song_song_title);
-            songSongArtist = rootView.findViewById(R.id.song_song_artist);
-            Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Ubuntu-C.ttf");
-            songSongTitle.setTypeface(typeFace);
-            songSongArtist.setTypeface(typeFace);
+        playBtn = getView().findViewById(R.id.playBtn); prevBtn = getView().findViewById(R.id.prevBtn);
+        nextBtn = getView().findViewById(R.id.nextBtn); loopBtn = getView().findViewById(R.id.loopBtn);
+        randBtn = getView().findViewById(R.id.randBtn);
 
-            seekBar = rootView.findViewById(R.id.seekBar);
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
-                    if(fromUser){
-                        mListener.changeFromSeekBar(i);
-                        seekBar.setProgress(i);
-                        mListener.changeFromSeekBar(i);
-                    }
+        playBtn.setOnClickListener(this); prevBtn.setOnClickListener(this); nextBtn.setOnClickListener(this);
+        loopBtn.setOnClickListener(this); randBtn.setOnClickListener(this);
+
+        songSongTitle = getView().findViewById(R.id.song_song_title);
+        songSongArtist = getView().findViewById(R.id.song_song_artist);
+        Typeface typeFace = Typeface.createFromAsset(getActivity().getAssets(), "Ubuntu-C.ttf");
+        songSongTitle.setTypeface(typeFace);
+        songSongArtist.setTypeface(typeFace);
+
+        seekBar = getView().findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
+                if(fromUser){
+                    mListener.changeFromSeekBar(i);
+                    seekBar.setProgress(i);
+                    mListener.changeFromSeekBar(i);
                 }
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    mListener.changeFromSeekBar(seekBar.getProgress());
-                    seekBar.setProgress(seekBar.getProgress());
-                }
-            });
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mListener.changeFromSeekBar(seekBar.getProgress());
+                seekBar.setProgress(seekBar.getProgress());
+            }
+        });
+
+    }
+
+    public void updateTheme(){
+        int theme = mListener.getSpTheme();
+
+        if(theme==0 || theme==1){
+            songSongTitle.setTextColor(Color.BLACK);
+            songSongArtist.setTextColor(Color.BLACK);
+
+            currLoopDraw = R.drawable.loop;
+            currLoop_fadedDraw = R.drawable.loop_faded;
+            currNextDraw = R.drawable.next;
+            currPauseDraw = R.drawable.pause;
+            currPlayDraw = R.drawable.play;
+            currPrevDraw = R.drawable.prev;
+            currRandDraw = R.drawable.rand;
+            currRand_fadedDraw = R.drawable.rand_faded;
+
+        } else{
+            songSongTitle.setTextColor(Color.WHITE);
+            songSongArtist.setTextColor(Color.WHITE);
+
+            currLoopDraw = R.drawable.loop_white;
+            currLoop_fadedDraw = R.drawable.loop_faded_white;
+            currNextDraw = R.drawable.next_white;
+            currPauseDraw = R.drawable.pause_white;
+            currPlayDraw = R.drawable.play_white;
+            currPrevDraw = R.drawable.prev_white;
+            currRandDraw = R.drawable.rand_white;
+            currRand_fadedDraw = R.drawable.rand_faded_white;
         }
+
     }
 
     public void updateInterface(Song currentSong){
@@ -122,25 +154,27 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         super.onResume();
         Song currentSong = mListener.getCurrentSong();
         updateInterface(currentSong);
+        updateTheme();
 
-        if (mListener.getCurrentState() == 1){
-            playBtn.setBackgroundResource(R.drawable.pause);
-        }else{
-            playBtn.setBackgroundResource(R.drawable.play);
-        }
-        if (mListener.getCurrentLoop() == 1) loopBtn.setBackgroundResource(R.drawable.loop);
-        else loopBtn.setBackgroundResource(R.drawable.loop_faded);
+        if (mListener.getCurrentState() == 1) playBtn.setBackgroundResource(currPauseDraw);
+        else playBtn.setBackgroundResource(currPlayDraw);
 
-        if (mListener.getCurrentRand() == 1) randBtn.setBackgroundResource(R.drawable.rand);
-        else randBtn.setBackgroundResource(R.drawable.rand_faded);
+        if (mListener.getCurrentLoop() == 1) loopBtn.setBackgroundResource(currLoopDraw);
+        else loopBtn.setBackgroundResource(currLoop_fadedDraw);
+
+        if (mListener.getCurrentRand() == 1) randBtn.setBackgroundResource(currRandDraw);
+        else randBtn.setBackgroundResource(currRand_fadedDraw);
+
+        prevBtn.setBackgroundResource(currPrevDraw);
+        nextBtn.setBackgroundResource(currNextDraw);
     }
 
-    public void updateBtnOnPlay(){ playBtn.setBackgroundResource(R.drawable.pause); }
-    public void updateBtnOnPause(){ playBtn.setBackgroundResource(R.drawable.play); }
-    public void updateLoopOnIn(){ loopBtn.setBackgroundResource(R.drawable.loop); }
-    public void updateLoopOnOut(){ loopBtn.setBackgroundResource(R.drawable.loop_faded); }
-    public void updateRandOnIn(){ randBtn.setBackgroundResource(R.drawable.rand); }
-    public void updateRandOnOut(){ randBtn.setBackgroundResource(R.drawable.rand_faded); }
+    public void updateBtnOnPlay(){ playBtn.setBackgroundResource(currPauseDraw); }
+    public void updateBtnOnPause(){ playBtn.setBackgroundResource(currPlayDraw); }
+    public void updateLoopOnIn(){ loopBtn.setBackgroundResource(currLoopDraw); }
+    public void updateLoopOnOut(){ loopBtn.setBackgroundResource(currLoop_fadedDraw); }
+    public void updateRandOnIn(){ randBtn.setBackgroundResource(currRandDraw); }
+    public void updateRandOnOut(){ randBtn.setBackgroundResource(currRand_fadedDraw); }
 
     @Override
     public void onClick(View view) {
@@ -167,5 +201,7 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         seekBar.setMax(duration);
         seekBar.setProgress(progress);
     }
+
+
 
 }

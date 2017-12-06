@@ -61,95 +61,82 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setupLayout();
+        updateTheme();
     }
 
     public void setupLayout(){
-        theme00 = rootView.findViewById(R.id.theme00);
-        theme01 = rootView.findViewById(R.id.theme01);
-        theme10 = rootView.findViewById(R.id.theme10);
-        theme11 = rootView.findViewById(R.id.theme11);
-        theme00.setOnClickListener(this);
-        theme01.setOnClickListener(this);
-        theme10.setOnClickListener(this);
-        theme11.setOnClickListener(this);
-        theme00.setTypeface(typeFace);
-        theme01.setTypeface(typeFace);
-        theme10.setTypeface(typeFace);
-        theme11.setTypeface(typeFace);
+        theme00 = rootView.findViewById(R.id.theme00); theme01 = rootView.findViewById(R.id.theme01);
+        theme10 = rootView.findViewById(R.id.theme10); theme11 = rootView.findViewById(R.id.theme11);
+
+        theme00.setOnClickListener(this); theme01.setOnClickListener(this);
+        theme10.setOnClickListener(this); theme11.setOnClickListener(this);
+        theme00.setTypeface(typeFace); theme01.setTypeface(typeFace);
+        theme10.setTypeface(typeFace); theme11.setTypeface(typeFace);
+    }
+
+    public void updateTheme(){
 
         int theme = mListener.getSpTheme();
+        int textColor, bgColorLight, bgColorDark;
+
+        if(theme==0 || theme==1){
+            textColor = Color.BLACK;
+            bgColorLight = Color.argb(20, 0, 0, 0);
+            bgColorDark = Color.argb(60, 0, 0, 0);
+        } else{
+            textColor = Color.WHITE;
+            bgColorLight = Color.argb(20, 255, 255, 255);
+            bgColorDark = Color.argb(60, 255, 255, 255);
+        }
+
+        theme00.setTextColor(textColor); theme01.setTextColor(textColor);
+        theme10.setTextColor(textColor); theme11.setTextColor(textColor);
+
         switch(theme){
             case 0:
-                theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme00.setBackgroundColor(bgColorDark);
+                theme01.setBackgroundColor(bgColorLight);
+                theme10.setBackgroundColor(bgColorLight);
+                theme11.setBackgroundColor(bgColorLight);
                 break;
             case 1:
-                theme01.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme01.setBackgroundColor(bgColorDark);
+                theme00.setBackgroundColor(bgColorLight);
+                theme10.setBackgroundColor(bgColorLight);
+                theme11.setBackgroundColor(bgColorLight);
                 break;
             case 2:
-                theme10.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme10.setBackgroundColor(bgColorDark);
+                theme00.setBackgroundColor(bgColorLight);
+                theme01.setBackgroundColor(bgColorLight);
+                theme11.setBackgroundColor(bgColorLight);
                 break;
             case 3:
-                theme11.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                theme11.setBackgroundColor(bgColorDark);
+                theme00.setBackgroundColor(bgColorLight);
+                theme01.setBackgroundColor(bgColorLight);
+                theme10.setBackgroundColor(bgColorLight);
                 break;
         }
+
     }
 
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-
             case R.id.theme00:
                 mListener.switchTheme(0);
-
-                theme00.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
                 break;
             case R.id.theme01:
                 mListener.switchTheme(1);
-
-                theme01.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
                 break;
             case R.id.theme10:
-                mListener.switchTheme(0);
-
-                theme10.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme11.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                mListener.switchTheme(2);
                 break;
             case R.id.theme11:
-                mListener.switchTheme(1);
-
-                theme11.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
-                theme00.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme01.setBackgroundColor(Color.argb(20, 0, 0, 0));
-                theme10.setBackgroundColor(Color.argb(20, 0, 0, 0));
+                mListener.switchTheme(3);
                 break;
         }
     }
+
 }

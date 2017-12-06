@@ -73,7 +73,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
     ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor threadPoolExecutor;
-    ColorTask4 colorTask4;
+    ColorTaskLight colorTaskLight;
+    ColorTaskDark colorTaskDark;
     SeekBarTask seekBarTask;
 
     private SettingsFragment settingsFragment;
@@ -82,12 +83,13 @@ MyListsFragment.OnFragmentInteractionListener {
     private MyListsFragment myListsFragment;
 
     private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     private static final int PERMISSION_REQUEST_CODE = 1;
 
     public View bg1, bg2, bg3, bg4;
 
-    private LinearLayout mainLayout, newListLayout;
+    private LinearLayout newListLayout;
 
     Typeface typeFace;
     SharedPreferences sharedPreferences;
@@ -245,7 +247,6 @@ MyListsFragment.OnFragmentInteractionListener {
         //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
-        mainLayout = findViewById(R.id.mainLayout);
         newListLayout = findViewById(R.id.newListLayout);
         newListLayout.setVisibility(View.INVISIBLE);
 
@@ -265,13 +266,13 @@ MyListsFragment.OnFragmentInteractionListener {
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
 
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager viewPager = findViewById(R.id.container);
+        viewPager = findViewById(R.id.container);
         viewPager.setAdapter(sectionsPagerAdapter);
         viewPager.setCurrentItem(1);
 
         tabLayout = findViewById(R.id.tab);
         tabLayout.setupWithViewPager(viewPager);
-        customizeTabLayout();
+        customizeTabLayout(Color.BLACK);
 
         queue = new ArrayBlockingQueue<>(6);
         threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
@@ -297,7 +298,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     }
 
-    private void customizeTabLayout() {
+    private void customizeTabLayout(int textColor) {
         ViewGroup vg = (ViewGroup) tabLayout.getChildAt(0);
         for (int j=0; j<vg.getChildCount(); j++) {
             ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
@@ -305,9 +306,11 @@ MyListsFragment.OnFragmentInteractionListener {
                 View tabViewChild = vgTab.getChildAt(i);
                 if (tabViewChild instanceof TextView) {
                     ((TextView) tabViewChild).setTypeface(typeFace);
+                    ((TextView) tabViewChild).setTextColor(textColor);
                 }
             }
         }
+        tabLayout.setSelectedTabIndicatorColor(textColor);
     }
 
     private void setupListsView(){
@@ -384,7 +387,9 @@ MyListsFragment.OnFragmentInteractionListener {
         customLists.put(nameInput, theIDs);
 
         newListLayout.setVisibility(View.INVISIBLE);
-        mainLayout.setVisibility(View.VISIBLE);
+
+        tabLayout.setVisibility(View.VISIBLE);
+        viewPager.setVisibility(View.VISIBLE);
 
         if(myListsFragment != null) {
             myListsFragment.updateInterface();
@@ -396,6 +401,10 @@ MyListsFragment.OnFragmentInteractionListener {
     public void setList(String listName){
         if(listName.equals("+")){
             newListLayout.setVisibility(View.VISIBLE);
+
+            tabLayout.setVisibility(View.INVISIBLE);
+            viewPager.setVisibility(View.INVISIBLE);
+
         }else if(listName.equals(currList)){
             currList = "MAIN";
         } else{
@@ -545,40 +554,59 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onPause() {
         super.onPause();
-        if(colorTask4!=null) colorTask4.killLightColorTask();
+        if(colorTaskLight !=null) colorTaskLight.killColorTaskLight();
+        if(colorTaskDark !=null) colorTaskDark.killColorTaskDark();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(sharedPreferences.getInt("theme", 666)==1)
-            colorTask4 = new ColorTask4(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+        if(sharedPreferences.getInt("theme", 666)==1) {
+            colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+            customizeTabLayout(Color.BLACK);
+        }
+        if(sharedPreferences.getInt("theme", 666)==3) {
+            colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+            customizeTabLayout(Color.WHITE);
+        }
     }
 
     public void switchTheme(int i){
+
         sharedPreferences.edit().putInt("theme", i).apply();
-        switch(i){
-            case 0:
-                if(colorTask4!=null){
-                    colorTask4.killLightColorTask();
-                    colorTask4 = null;
-                    bg1.setBackgroundColor(Color.rgb(255,255,255));
-                    bg2.setBackgroundColor(Color.rgb(255,255,255));
-                    bg3.setBackgroundColor(Color.rgb(255,255,255));
-                    bg4.setBackgroundColor(Color.rgb(255,255,255));
-                }
-                break;
-            case 1:
-                if(colorTask4==null)
-                    colorTask4 = new ColorTask4(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-                break;
+        if(settingsFragment!=null) settingsFragment.updateTheme();
+        if(songFragment!=null) songFragment.updateTheme();
+
+        if(i==0 || i==1) customizeTabLayout(Color.BLACK);
+        else customizeTabLayout(Color.WHITE);
+
+        if(colorTaskLight!=null) {
+            colorTaskLight.killColorTaskLight();
+            colorTaskLight = null; }
+        if(colorTaskDark!=null) {
+            colorTaskDark.killColorTaskDark();
+            colorTaskDark = null; }
+
+        if(i==0){
+            bg1.setBackgroundColor(Color.WHITE); bg2.setBackgroundColor(Color.WHITE);
+            bg3.setBackgroundColor(Color.WHITE); bg4.setBackgroundColor(Color.WHITE);
         }
+        if(i==2){
+            bg1.setBackgroundColor(Color.BLACK); bg2.setBackgroundColor(Color.BLACK);
+            bg3.setBackgroundColor(Color.BLACK); bg4.setBackgroundColor(Color.BLACK);
+        }
+        if(i==1) colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+        if(i==3) colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
 
     }
 
     @Override
     public void onBackPressed() {
-        if(newListLayout.getVisibility()== View.VISIBLE) newListLayout.setVisibility(View.INVISIBLE);
+        if(newListLayout.getVisibility()== View.VISIBLE){
+            newListLayout.setVisibility(View.INVISIBLE);
+            tabLayout.setVisibility(View.VISIBLE);
+            viewPager.setVisibility(View.VISIBLE);
+        }
         else moveTaskToBack(true);
     }
 

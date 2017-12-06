@@ -8,15 +8,15 @@ import android.view.View;
 import java.util.Random;
 import java.util.concurrent.ThreadPoolExecutor;
 
-class ColorTask4 {
+class ColorTaskDark {
 
     private Random random;
     private int color;
     private ShiftColorTask task0;
     private ColorTask task1;
 
-    ColorTask4(ThreadPoolExecutor mThreadPoolExecutor, int delay, int colorDelay,
-               View bg1, View bg2, View bg3, View bg4){
+    ColorTaskDark(ThreadPoolExecutor mThreadPoolExecutor, int delay, int colorDelay,
+                  View bg1, View bg2, View bg3, View bg4){
 
         random = new Random();
 
@@ -29,7 +29,7 @@ class ColorTask4 {
 
     }
 
-    void killLightColorTask(){
+    void killColorTaskDark(){
         task0.cancel(true);
         task1.cancel(true);
     }
@@ -61,12 +61,12 @@ class ColorTask4 {
     }
 
     private void chooseColor(View view){
-        if(color == 0) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, 0, 0));
-        if(color == 1) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, random.nextInt(50)+200, 0));
-        if(color == 2) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+200, 0));
-        if(color == 3) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+200, random.nextInt(50)+200));
-        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, random.nextInt(50)+200));
-        if(color == 5) view.setBackgroundColor(Color.rgb(random.nextInt(50)+200, 0, random.nextInt(50)+200));
+        if(color == 0) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, 0, 0));
+        if(color == 1) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, random.nextInt(50)+10, 0));
+        if(color == 2) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+10, 0));
+        if(color == 3) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+10, random.nextInt(50)+10));
+        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, random.nextInt(50)+10));
+        if(color == 5) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, 0, random.nextInt(50)+10));
     }
 
     private class ShiftColorTask extends AsyncTask<Integer, Void, Void>{
