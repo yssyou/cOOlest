@@ -96,10 +96,13 @@ MyListsFragment.OnFragmentInteractionListener {
 
     Button createButton;
     EditText newName;
+    TextView textView;
 
     SQLiteDatabase SQLiteDB;
 
     SongsListAdapter adapter;
+
+    SearchView searchView;
 
     private MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -282,10 +285,10 @@ MyListsFragment.OnFragmentInteractionListener {
         mediaBrowserCompat.connect();
 
         retrieveSongList();
-        adapter = new SongsListAdapter(this, songsList, typeFace);
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
         setupListsView();
 
-        SearchView searchView = findViewById(R.id.searchView);
+        searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
@@ -295,6 +298,7 @@ MyListsFragment.OnFragmentInteractionListener {
                 return false;
             }
         });
+
 
     }
 
@@ -324,6 +328,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
         createButton = findViewById(R.id.createButton);
         newName = findViewById(R.id.newName);
+        textView = findViewById(R.id.textView);
+
         createButton.setTypeface(typeFace);
         newName.setTypeface(typeFace);
 
@@ -392,7 +398,7 @@ MyListsFragment.OnFragmentInteractionListener {
         viewPager.setVisibility(View.VISIBLE);
 
         if(myListsFragment != null) {
-            myListsFragment.updateInterface();
+            myListsFragment.updateInterface(getSpTheme());
         }
 
         theIDs = new ArrayList<>(); // we refresh theIDs for a new list
@@ -561,14 +567,15 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onResume() {
         super.onResume();
-        if(sharedPreferences.getInt("theme", 666)==1) {
+        if(getSpTheme()==1) {
             colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-            customizeTabLayout(Color.BLACK);
         }
-        if(sharedPreferences.getInt("theme", 666)==3) {
+        if(getSpTheme()==3) {
             colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-            customizeTabLayout(Color.WHITE);
         }
+
+        switchTheme(getSpTheme());
+
     }
 
     public void switchTheme(int i){
@@ -576,9 +583,25 @@ MyListsFragment.OnFragmentInteractionListener {
         sharedPreferences.edit().putInt("theme", i).apply();
         if(settingsFragment!=null) settingsFragment.updateTheme();
         if(songFragment!=null) songFragment.updateTheme();
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+        if(listFragment!=null) listFragment.updateTheme();
 
-        if(i==0 || i==1) customizeTabLayout(Color.BLACK);
-        else customizeTabLayout(Color.WHITE);
+        if(i==0 || i==1){
+            customizeTabLayout(Color.BLACK);
+            // HERE CHANGE SEEKBAR COLOR PROGRAMATICALLY
+            newName.setTextColor(Color.BLACK);
+            textView.setTextColor(Color.BLACK);
+            createButton.setTextColor(Color.BLACK);
+        }
+        else{
+            customizeTabLayout(Color.WHITE);
+            // HERE CHANGE SEEKBAR COLOR PROGRAMATICALLY
+            newName.setTextColor(Color.WHITE);
+            textView.setTextColor(Color.WHITE);
+            createButton.setTextColor(Color.WHITE);
+        }
+
+        setupListsView(); // another weird call
 
         if(colorTaskLight!=null) {
             colorTaskLight.killColorTaskLight();

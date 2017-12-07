@@ -1,6 +1,7 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +19,14 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
     private ArrayList<Song> originalData;
     private ArrayList<Song> filteredData;
     private Typeface typeFace;
+    private int theme;
 
-    SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace){
+    SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
         this.context = context;
         this.originalData = originalData;
         filteredData = originalData;
         this.typeFace = typeFace;
+        this.theme = theme;
     }
 
     private class ViewHolder { // this is an amazing piece of code :D
@@ -48,6 +51,18 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
             viewHolder = new ViewHolder(view);
             viewHolder.songTitle.setTypeface(typeFace);
             viewHolder.songArtist.setTypeface(typeFace);
+
+            if(theme==0 || theme==1) {
+                viewHolder.songTitle.setTextColor(Color.BLACK);
+                viewHolder.songArtist.setTextColor(Color.BLACK);
+                viewHolder.imageView.setBackgroundResource(R.drawable.musicnote);
+            }
+            else{
+                viewHolder.songTitle.setTextColor(Color.WHITE);
+                viewHolder.songArtist.setTextColor(Color.WHITE);
+                viewHolder.imageView.setBackgroundResource(R.drawable.musicnote_white);
+            }
+
             view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder)view.getTag();

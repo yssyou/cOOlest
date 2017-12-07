@@ -18,12 +18,14 @@ class ListsGridAdapter extends BaseAdapter {
     private Typeface typeFace;
     private ArrayList<String> listsTitles;
     private String currList;
+    private int theme;
 
-    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace, String currList){
+    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace, String currList, int theme){
         this.context = context;
         this.listsTitles = listsTitles;
         this.typeFace = typeFace;
         this.currList = currList;
+        this.theme = theme;
         Collections.sort(listsTitles);
     }
 
@@ -41,6 +43,10 @@ class ListsGridAdapter extends BaseAdapter {
             view = LayoutInflater.from(context).inflate(R.layout.list_title, viewGroup, false);
             viewHolder = new ViewHolder(view);
             viewHolder.listTitle.setTypeface(typeFace);
+
+            if(theme==0 || theme==1) viewHolder.listTitle.setTextColor(Color.BLACK);
+            else viewHolder.listTitle.setTextColor(Color.WHITE);
+
             view.setTag(viewHolder);
 
             if(listsTitles.get(i).equals(currList))

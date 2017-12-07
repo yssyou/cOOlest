@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -53,16 +54,16 @@ public class MyListsFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        updateInterface();
+        updateInterface(mListener.getSpTheme());
     }
 
-    public void updateInterface(){
+    public void updateInterface(int theme){
         listsGridView = getView().findViewById(R.id.listsGridView);
 
         listsTitles = new ArrayList<>();
         listsTitles.addAll(mListener.getCustomLists().keySet());
 
-        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList());
+        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList(), theme);
 
         listsGridView.setAdapter(adapter);
 
@@ -100,5 +101,6 @@ public class MyListsFragment extends Fragment{
         void setList(String listName);
         Typeface getTypeface();
         String getCurrList();
+        int getSpTheme();
     }
 }
