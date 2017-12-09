@@ -2,6 +2,7 @@ package com.example.rayku.coolest;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -118,6 +119,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
             songSongTitle.setTextColor(Color.BLACK);
             songSongArtist.setTextColor(Color.BLACK);
 
+            seekBar.getProgressDrawable().setColorFilter(Color.BLACK, PorterDuff.Mode.MULTIPLY);
+
             currLoopDraw = R.drawable.loop;
             currLoop_fadedDraw = R.drawable.loop_faded;
             currNextDraw = R.drawable.next;
@@ -130,6 +133,8 @@ public class SongFragment extends Fragment implements View.OnClickListener {
         } else{
             songSongTitle.setTextColor(Color.WHITE);
             songSongArtist.setTextColor(Color.WHITE);
+
+            seekBar.getProgressDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
             currLoopDraw = R.drawable.loop_white;
             currLoop_fadedDraw = R.drawable.loop_faded_white;

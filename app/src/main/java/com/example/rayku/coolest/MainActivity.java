@@ -10,7 +10,9 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.RemoteException;
@@ -28,6 +30,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,11 +38,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -100,8 +105,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
     SQLiteDatabase SQLiteDB;
 
-    SongsListAdapter adapter;
-
+    SongsListAdapter adapter, adapter2; // one for the ListFragment and other for the listToNew
+    ListView listToNew;
     SearchView searchView;
 
     private MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
@@ -285,7 +290,6 @@ MyListsFragment.OnFragmentInteractionListener {
         mediaBrowserCompat.connect();
 
         retrieveSongList();
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
         setupListsView();
 
         searchView = findViewById(R.id.searchView);
@@ -295,14 +299,13 @@ MyListsFragment.OnFragmentInteractionListener {
             @Override
             public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
+                adapter2.getFilter().filter(newText);
                 return false;
             }
         });
-
-
     }
 
-    private void customizeTabLayout(int textColor) {
+    private void customizeTabLayout(int textColor){
         ViewGroup vg = (ViewGroup) tabLayout.getChildAt(0);
         for (int j=0; j<vg.getChildCount(); j++) {
             ViewGroup vgTab = (ViewGroup) vg.getChildAt(j);
@@ -317,12 +320,27 @@ MyListsFragment.OnFragmentInteractionListener {
         tabLayout.setSelectedTabIndicatorColor(textColor);
     }
 
+    private void customizeSearchView(int textColor){
+        ((TextView) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setTextColor(textColor);
+
+        ImageView searchIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_button);
+        ImageView closeIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
+
+        searchIcon.setColorFilter(textColor);
+        closeIcon.setColorFilter(textColor);
+    }
+
     private void setupListsView(){
+
+        listToNew = findViewById(R.id.listToNew);
+
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme()); // we update both adapters
+        adapter2 = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+
+        listToNew.setAdapter(adapter2);
+
         customLists = new HashMap<>();
         customLists.put("+", new ArrayList<Long>());
-
-        ListView listToNew = findViewById(R.id.listToNew);
-        listToNew.setAdapter(adapter);
 
         ((TextView)findViewById(R.id.textView)).setTypeface(typeFace);
 
@@ -357,20 +375,14 @@ MyListsFragment.OnFragmentInteractionListener {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Song s = (Song)adapterView.getItemAtPosition(i);
+                Song s = songsList.get(i);
 
                 if(view.getBackground()==null) {
-
-                    //theIDs.add(songsList.get(i).getId());
                     theIDs.add(s.getId());
-
-
-                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                    adapter2.select(i, true);
                 } else{
-                    //theIDs.remove(songsList.get(i).getId());
                     theIDs.remove(s.getId());
-
-                    view.setBackground(null);
+                    adapter2.select(i, false);
                 }
             }
         });
@@ -578,30 +590,55 @@ MyListsFragment.OnFragmentInteractionListener {
 
     }
 
+    public static void setCursorDrawableColor(EditText editText, int color) {
+        try {
+            Field fCursorDrawableRes = TextView.class.getDeclaredField("mCursorDrawableRes");
+            fCursorDrawableRes.setAccessible(true);
+            int mCursorDrawableRes = fCursorDrawableRes.getInt(editText);
+            Field fEditor = TextView.class.getDeclaredField("mEditor");
+            fEditor.setAccessible(true);
+            Object editor = fEditor.get(editText);
+            Class<?> clazz = editor.getClass();
+            Field fCursorDrawable = clazz.getDeclaredField("mCursorDrawable");
+            fCursorDrawable.setAccessible(true);
+            Drawable[] drawables = new Drawable[2];
+            drawables[0] = editText.getContext().getResources().getDrawable(mCursorDrawableRes);
+            drawables[1] = editText.getContext().getResources().getDrawable(mCursorDrawableRes);
+            drawables[0].setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            drawables[1].setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            fCursorDrawable.set(editor, drawables);
+        } catch (Throwable ignored) {
+        }
+    }
+
     public void switchTheme(int i){
 
         sharedPreferences.edit().putInt("theme", i).apply();
+
+        setupListsView();
+
         if(settingsFragment!=null) settingsFragment.updateTheme();
         if(songFragment!=null) songFragment.updateTheme();
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
         if(listFragment!=null) listFragment.updateTheme();
 
         if(i==0 || i==1){
             customizeTabLayout(Color.BLACK);
-            // HERE CHANGE SEEKBAR COLOR PROGRAMATICALLY
             newName.setTextColor(Color.BLACK);
             textView.setTextColor(Color.BLACK);
             createButton.setTextColor(Color.BLACK);
+            customizeSearchView(Color.BLACK);
+
+            newName.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+            //newName.setColor
+
         }
         else{
             customizeTabLayout(Color.WHITE);
-            // HERE CHANGE SEEKBAR COLOR PROGRAMATICALLY
             newName.setTextColor(Color.WHITE);
             textView.setTextColor(Color.WHITE);
             createButton.setTextColor(Color.WHITE);
+            customizeSearchView(Color.WHITE);
         }
-
-        setupListsView(); // another weird call
 
         if(colorTaskLight!=null) {
             colorTaskLight.killColorTaskLight();

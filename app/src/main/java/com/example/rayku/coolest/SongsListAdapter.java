@@ -20,13 +20,20 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
     private ArrayList<Song> filteredData;
     private Typeface typeFace;
     private int theme;
+    Boolean[] selected; // to keep track of the colored rows
 
     SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
         this.context = context;
         this.originalData = originalData;
-        filteredData = originalData;
         this.typeFace = typeFace;
         this.theme = theme;
+
+        selected = new Boolean[originalData.size()];
+        for (int i = 0; i < originalData.size(); i++) {
+            selected[i] = false;
+        }
+
+        filteredData = originalData;
     }
 
     private class ViewHolder { // this is an amazing piece of code :D
@@ -56,6 +63,7 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
                 viewHolder.songTitle.setTextColor(Color.BLACK);
                 viewHolder.songArtist.setTextColor(Color.BLACK);
                 viewHolder.imageView.setBackgroundResource(R.drawable.musicnote);
+
             }
             else{
                 viewHolder.songTitle.setTextColor(Color.WHITE);
@@ -69,10 +77,15 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
         }
 
         Song currentSong = (Song)getItem(i);
-
         viewHolder.songTitle.setText(currentSong.getTitle());
         viewHolder.songArtist.setText(currentSong.getArtist());
-        viewHolder.imageView.setImageResource(R.drawable.musicnote);
+
+        view.setBackground(null);
+
+        if(selected[i]) {
+            view.setBackgroundColor(Color.argb(40, 128, 128, 128));
+
+        }
 
         return view;
     }
@@ -119,6 +132,11 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
                 notifyDataSetChanged();
             }
         };
+    }
+
+    public void select(int i, boolean isIt) {
+        selected[i] = isIt;
+        notifyDataSetChanged();
     }
 
 }
