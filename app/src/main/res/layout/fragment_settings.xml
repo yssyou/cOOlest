@@ -5,52 +5,52 @@
     android:layout_height="match_parent"
     tools:context="com.example.rayku.coolest.SettingsFragment">
 
-
     <com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:flexWrap="wrap"
-        app:justifyContent="center">
+        android:layout_height="match_parent"
+        app:flexDirection="column"
+        app:flexWrap="nowrap"
+        app:justifyContent="space_around">
 
-        <TextView
-            android:id="@+id/theme00"
+        <TextView android:id="@+id/theme00"
+            app:layout_flexGrow="1"
+            android:layout_margin="10dp"
             android:layout_width="120dp"
             android:layout_height="100dp"
-            android:layout_margin="10dp"
             android:background="@color/lightDark"
             android:gravity="center"
-            android:text="WHITE"
+            android:text="@string/white"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/theme01"
+        <TextView android:id="@+id/theme01"
+            app:layout_flexGrow="1"
+            android:layout_margin="10dp"
             android:layout_width="120dp"
             android:layout_height="100dp"
-            android:layout_margin="10dp"
             android:background="@color/lightDark"
             android:gravity="center"
-            android:text="4-COLORS"
+            android:text="@string/_4_colors"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/theme10"
+        <TextView android:id="@+id/theme10"
+            app:layout_flexGrow="1"
+            android:layout_margin="10dp"
             android:layout_width="120dp"
             android:layout_height="100dp"
-            android:layout_margin="10dp"
             android:background="@color/lightDark"
             android:gravity="center"
-            android:text="BLACK"
+            android:text="@string/black"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/theme11"
+        <TextView android:id="@+id/theme11"
+            app:layout_flexGrow="1"
+            android:layout_margin="10dp"
             android:layout_width="120dp"
             android:layout_height="100dp"
-            android:layout_margin="10dp"
             android:background="@color/lightDark"
             android:gravity="center"
-            android:text="4-COLORS-DARK"
+            android:text="@string/_4_colors_dark"
             android:textSize="20sp" />
 
     </com.google.android.flexbox.FlexboxLayout>

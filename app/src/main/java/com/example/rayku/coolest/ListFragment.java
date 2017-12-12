@@ -43,6 +43,9 @@ public class ListFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.i("wtfnigga", "THIS HAS BEEN CREATED");
+
         arrayList = mListener.getSongList();
     }
 

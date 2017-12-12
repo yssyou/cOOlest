@@ -12,10 +12,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -30,7 +30,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,8 +42,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -109,80 +106,93 @@ MyListsFragment.OnFragmentInteractionListener {
     ListView listToNew;
     SearchView searchView;
 
-    private MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
-        @Override
-        public void onConnected() {
-            super.onConnected();
-            try {
-                MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mediaBrowserCompat.getSessionToken());
-                mMediaControllerCompat.registerCallback(mediaControllerCompatCallback);
+    MediaControllerCompat.Callback mediaControllerCompatCallback;
 
-                MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
-                tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
+    private void doTheBrowserProcess() {
 
-            } catch( RemoteException e ) { e.printStackTrace(); }
-        }
-    };
+        MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
-    private MediaControllerCompat.Callback mediaControllerCompatCallback = new MediaControllerCompat.Callback() {
+            @Override
+            public void onConnected() {
+                super.onConnected();
+                try {
+                    MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mediaBrowserCompat.getSessionToken());
+                    mMediaControllerCompat.registerCallback(mediaControllerCompatCallback);
 
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            super.onPlaybackStateChanged(state);
-            if (state == null) {
-                return;
-            }
-            switch (state.getState()) {
-                case PlaybackStateCompat.STATE_PLAYING: {
-                    currState = STATE_PLAYING;
-                    if (listFragment != null) {
-                        listFragment.updateBtnOnPlay();
-                    }
-                    if (songFragment != null) {
-                        songFragment.updateBtnOnPlay();
-                    }
-                    break;
-                }
-                case PlaybackStateCompat.STATE_PAUSED: {
-                    currState = STATE_PAUSED;
-                    if (listFragment != null) {
-                        listFragment.updateBtnOnPause();
-                    }
-                    if (songFragment != null) {
-                        songFragment.updateBtnOnPause();
-                    }
-                    break;
+                    MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
+                    tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
+
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
             }
-        }
+        };
 
-        @Override
-        public void onSessionEvent(String event, Bundle extras) {
-            super.onSessionEvent(event, extras);
-            switch (event) {
-                case "playPrevSong":
-                    playPrev(null);
-                    break;
-                case "playNextSong":
-                    playNext(null);
-                    break;
-                case "songFinished":
-                    if(currLoop ==LOOPING)
-                        playSong(currIdx);
-                    else
+        mediaControllerCompatCallback = new MediaControllerCompat.Callback() {
+
+            @Override
+            public void onPlaybackStateChanged(PlaybackStateCompat state) {
+                super.onPlaybackStateChanged(state);
+                if (state == null) {
+                    return;
+                }
+                switch (state.getState()) {
+                    case PlaybackStateCompat.STATE_PLAYING: {
+                        currState = STATE_PLAYING;
+                        if (listFragment != null) {
+                            listFragment.updateBtnOnPlay();
+                        }
+                        if (songFragment != null) {
+                            songFragment.updateBtnOnPlay();
+                        }
+                        break;
+                    }
+                    case PlaybackStateCompat.STATE_PAUSED: {
+                        currState = STATE_PAUSED;
+                        if (listFragment != null) {
+                            listFragment.updateBtnOnPause();
+                        }
+                        if (songFragment != null) {
+                            songFragment.updateBtnOnPause();
+                        }
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onSessionEvent(String event, Bundle extras) {
+                super.onSessionEvent(event, extras);
+                switch (event) {
+                    case "playPrevSong":
+                        playPrev(null);
+                        break;
+                    case "playNextSong":
                         playNext(null);
-                    break;
-                case "lostAudioFocus":
-                    playPause(null);
-                    break;
-                case "sureRefreshIt!":
-                    if(songFragment!=null)
-                        songFragment.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
-                    break;
+                        break;
+                    case "songFinished":
+                        if (currLoop == LOOPING)
+                            playSong(currIdx);
+                        else
+                            playNext(null);
+                        break;
+                    case "lostAudioFocus":
+                        playPause(null);
+                        break;
+                    case "sureRefreshIt!":
+                        if (songFragment != null)
+                            songFragment.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
+                        break;
+                }
             }
-        }
-    };
+
+        };
+
+        mediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
+                mediaBrowserCompatConnectionCallback, getIntent().getExtras());
+        mediaBrowserCompat.connect();
+    }
 
     public static class PlaceholderFragment extends Fragment {
 
@@ -252,7 +262,7 @@ MyListsFragment.OnFragmentInteractionListener {
         setContentView(R.layout.activity_main);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
         newListLayout = findViewById(R.id.newListLayout);
@@ -271,7 +281,13 @@ MyListsFragment.OnFragmentInteractionListener {
         }
 
         sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
-        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 666)));
+        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
+
+        retrieveSongList();
+        doTheBrowserProcess();
+
+        queue = new ArrayBlockingQueue<>(6);
+        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
 
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         viewPager = findViewById(R.id.container);
@@ -282,20 +298,15 @@ MyListsFragment.OnFragmentInteractionListener {
         tabLayout.setupWithViewPager(viewPager);
         customizeTabLayout(Color.BLACK);
 
-        queue = new ArrayBlockingQueue<>(6);
-        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
-
-        mediaBrowserCompat = new MediaBrowserCompat(this, new ComponentName(this, BackgroundAudioService.class),
-                mediaBrowserCompatConnectionCallback, getIntent().getExtras());
-        mediaBrowserCompat.connect();
-
-        retrieveSongList();
         setupListsView();
 
         searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
             @Override
             public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
@@ -303,6 +314,7 @@ MyListsFragment.OnFragmentInteractionListener {
                 return false;
             }
         });
+
     }
 
     private void customizeTabLayout(int textColor){
@@ -364,6 +376,7 @@ MyListsFragment.OnFragmentInteractionListener {
                 else customLists.get(listName).add(id);
                 c.moveToNext();
             }
+            c.close();
 
         }catch(Exception e){
             e.printStackTrace();
@@ -375,7 +388,7 @@ MyListsFragment.OnFragmentInteractionListener {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Song s = songsList.get(i);
+                Song s = (Song)adapterView.getItemAtPosition(i);
 
                 if(view.getBackground()==null) {
                     theIDs.add(s.getId());
@@ -442,33 +455,62 @@ MyListsFragment.OnFragmentInteractionListener {
 
         ContentResolver contentResolver = getContentResolver();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        Cursor cursor = contentResolver.query(uri, null, null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-
-            int title = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int id = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int mimeType = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
-            int duration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-
+        Cursor c = contentResolver.query(uri, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
             do {
+                String currTitle = c.getString(title);
+                String currentArtist = c.getString(artist);
+                long currId = c.getLong(id);
+                String currMimeType = c.getString(mimeType);
+                int currDuration = (int)c.getLong(duration);
 
-                String currentTitle = cursor.getString(title);
-                String currentArtist = cursor.getString(artist);
-                long currentId = cursor.getLong(id);
-                String currentMimeType = cursor.getString(mimeType);
-                int currentDuration = (int)cursor.getLong(duration);
+                if (currMimeType.equals("audio/mpeg"))
+                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
 
-                if (currentMimeType.equals("audio/mpeg")) {
-                    songsList.add(0, new Song(currentId, currentTitle, currentArtist, currentDuration));
-                }
-            } while (cursor.moveToNext());
+            } while (c.moveToNext());
         }
 
+        uri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
+        c = contentResolver.query(uri, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            do {
+                String currTitle = c.getString(title);
+                String currentArtist = c.getString(artist);
+                long currId = c.getLong(id);
+                String currMimeType = c.getString(mimeType);
+                int currDuration = (int)c.getLong(duration);
+
+                if (currMimeType.equals("audio/mpeg")
+                        && !currTitle.equals("shutdownsound")
+                        && !currTitle.equals("bootsound")) {
+                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
+                }
+            } while (c.moveToNext());
+        }
+
+        if (c!= null) c.close();
+
         currIdx = 0;
-        currSong = songsList.get(currIdx);
+
+        if(songsList.size()==0){
+            Toast.makeText(this, "Please store some music in your phone", Toast.LENGTH_SHORT).show();
+            SystemClock.sleep(5000);
+            this.finishAffinity();
+        } else {
+            currSong = songsList.get(currIdx);
+        }
+
+
     }
 
     public void playSong(int i){
@@ -579,6 +621,7 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onResume() {
         super.onResume();
+
         if(getSpTheme()==1) {
             colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
         }
@@ -588,27 +631,6 @@ MyListsFragment.OnFragmentInteractionListener {
 
         switchTheme(getSpTheme());
 
-    }
-
-    public static void setCursorDrawableColor(EditText editText, int color) {
-        try {
-            Field fCursorDrawableRes = TextView.class.getDeclaredField("mCursorDrawableRes");
-            fCursorDrawableRes.setAccessible(true);
-            int mCursorDrawableRes = fCursorDrawableRes.getInt(editText);
-            Field fEditor = TextView.class.getDeclaredField("mEditor");
-            fEditor.setAccessible(true);
-            Object editor = fEditor.get(editText);
-            Class<?> clazz = editor.getClass();
-            Field fCursorDrawable = clazz.getDeclaredField("mCursorDrawable");
-            fCursorDrawable.setAccessible(true);
-            Drawable[] drawables = new Drawable[2];
-            drawables[0] = editText.getContext().getResources().getDrawable(mCursorDrawableRes);
-            drawables[1] = editText.getContext().getResources().getDrawable(mCursorDrawableRes);
-            drawables[0].setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            drawables[1].setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            fCursorDrawable.set(editor, drawables);
-        } catch (Throwable ignored) {
-        }
     }
 
     public void switchTheme(int i){
@@ -628,8 +650,7 @@ MyListsFragment.OnFragmentInteractionListener {
             createButton.setTextColor(Color.BLACK);
             customizeSearchView(Color.BLACK);
 
-            newName.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
-            //newName.setColor
+            newName.setHintTextColor(Color.LTGRAY);
 
         }
         else{
@@ -638,6 +659,8 @@ MyListsFragment.OnFragmentInteractionListener {
             textView.setTextColor(Color.WHITE);
             createButton.setTextColor(Color.WHITE);
             customizeSearchView(Color.WHITE);
+
+            newName.setHintTextColor(Color.LTGRAY);
         }
 
         if(colorTaskLight!=null) {
@@ -707,7 +730,7 @@ MyListsFragment.OnFragmentInteractionListener {
     public int getCurrentState(){ return currState; }
     public int getCurrentLoop(){ return currLoop; }
     public int getCurrentRand(){ return currRand; }
-    public int getSpTheme(){ return sharedPreferences.getInt("theme", 666); }
+    public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
     public SongsListAdapter getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
 

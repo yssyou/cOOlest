@@ -7,75 +7,55 @@
 
     <android.support.constraint.ConstraintLayout android:id="@+id/songLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_constraintBottom_creator="1"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1">
+        android:layout_height="match_parent" >
 
         <SeekBar
             android:id="@+id/seekBar"
-            android:layout_width="320dp"
+            android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
             android:thumb="@color/colorAccent"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="@+id/songGridLayout"
-            app:layout_constraintRight_toRightOf="@+id/songGridLayout"
             app:layout_constraintTop_toBottomOf="@+id/songGridLayout"
             tools:layout_constraintBottom_creator="1"
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintRight_creator="1" />
 
         <GridLayout android:id="@+id/songGridLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginBottom="40dp"
             android:paddingTop="20dp"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-            app:layout_constraintLeft_toLeftOf="parent"
-            tools:layout_constraintBottom_creator="1"
-            tools:layout_constraintLeft_creator="1">
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout">
 
             <TextView android:id="@+id/song_song_title"
-
                 android:layout_column="0"
                 android:layout_row="0"
-
                 android:layout_width="260dp"
-
                 android:layout_gravity="center_horizontal"
-
                 android:singleLine="true"
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit ="marquee_forever"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:scrollHorizontally="true"
-
                 android:textColor="@android:color/black"
                 android:textSize="28sp"
                 android:textStyle="bold"/>
 
             <TextView android:id="@+id/song_song_artist"
-                android:layout_width="320dp"
-                android:layout_height="wrap_content"
                 android:layout_column="0"
                 android:layout_row="1"
-                android:gravity="center"
+                android:layout_width="240dp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
                 android:maxHeight="20dp"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"/>
+                android:textSize="20sp" />
 
         </GridLayout>
 
         <LinearLayout android:id="@+id/linearLayout"
-            android:layout_width="320dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginBottom="-68dp"
             android:orientation="horizontal"
@@ -89,31 +69,31 @@
             tools:layout_constraintRight_creator="1">
 
             <Button android:id="@+id/loopBtn"
-                android:layout_width="80dp"
+                android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/loop_faded"/>
 
             <Button android:id="@+id/prevBtn"
-                android:layout_width="80dp"
+                android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/prev" />
 
             <Button android:id="@+id/playBtn"
-                android:layout_width="80dp"
+                android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/play" />
 
             <Button android:id="@+id/nextBtn"
-                android:layout_width="80dp"
+                android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/next" />
 
             <Button android:id="@+id/randBtn"
-                android:layout_width="80dp"
+                android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_weight="1"
                 android:background="@drawable/rand_faded"/>

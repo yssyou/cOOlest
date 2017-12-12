@@ -3,4 +3,11 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="name">NAME</string>
+    <string name="which_songs_do_you_want_in_this_playlist">Which songs do you want in this playlist?</string>
+    <string name="create">CREATE!</string>
+    <string name="white">WHITE</string>
+    <string name="_4_colors">4-COLORS</string>
+    <string name="black">BLACK</string>
+    <string name="_4_colors_dark">4-COLORS-DARK</string>
 </resources>
