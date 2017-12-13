@@ -10,4 +10,6 @@
     <string name="_4_colors">4-COLORS</string>
     <string name="black">BLACK</string>
     <string name="_4_colors_dark">4-COLORS-DARK</string>
+    <string name="no">NO</string>
+    <string name="yes">YES</string>
 </resources>

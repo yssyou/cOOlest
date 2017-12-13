@@ -49,13 +49,17 @@ class ListsGridAdapter extends BaseAdapter {
 
             view.setTag(viewHolder);
 
-            if(listsTitles.get(i).equals(currList))
-                view.setBackgroundColor(Color.argb(60, 0, 0, 0));
-
         } else {
             viewHolder = (ViewHolder)view.getTag();
         }
+
         viewHolder.listTitle.setText(listsTitles.get(i));
+
+        view.setBackground(null);
+
+        if(viewHolder.listTitle.getText().equals(currList))
+            view.setBackgroundColor(Color.argb(40, 128, 128, 128));
+
         return view;
     }
 
@@ -72,5 +76,10 @@ class ListsGridAdapter extends BaseAdapter {
     @Override
     public long getItemId(int position) {
         return position;
+    }
+
+    void select(String currList) {
+        this.currList = currList;
+        notifyDataSetChanged();
     }
 }

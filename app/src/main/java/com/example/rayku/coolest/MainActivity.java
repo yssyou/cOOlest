@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -96,9 +95,9 @@ MyListsFragment.OnFragmentInteractionListener {
     Typeface typeFace;
     SharedPreferences sharedPreferences;
 
-    Button createButton;
+    Button createButton, yesButton, noButton;
     EditText newName;
-    TextView textView;
+    TextView textView, confirmTextView;
 
     SQLiteDatabase SQLiteDB;
 
@@ -109,7 +108,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     MediaControllerCompat.Callback mediaControllerCompatCallback;
 
-    private void doTheBrowserProcess() {
+    private void setUpMediaBrowserService() {
 
         MediaBrowserCompat.ConnectionCallback mediaBrowserCompatConnectionCallback = new MediaBrowserCompat.ConnectionCallback() {
 
@@ -262,7 +261,7 @@ MyListsFragment.OnFragmentInteractionListener {
         setContentView(R.layout.activity_main);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
         newListLayout = findViewById(R.id.newListLayout);
@@ -284,7 +283,7 @@ MyListsFragment.OnFragmentInteractionListener {
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
 
         retrieveSongList();
-        doTheBrowserProcess();
+        setUpMediaBrowserService();
 
         queue = new ArrayBlockingQueue<>(6);
         threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
@@ -359,23 +358,32 @@ MyListsFragment.OnFragmentInteractionListener {
         createButton = findViewById(R.id.createButton);
         newName = findViewById(R.id.newName);
         textView = findViewById(R.id.textView);
-
         createButton.setTypeface(typeFace);
         newName.setTypeface(typeFace);
+
+        confirmTextView = findViewById(R.id.confirmTextView);
+        confirmTextView.setTypeface(typeFace);
+        confirmTextView.setVisibility(View.INVISIBLE);
+
+        yesButton = findViewById(R.id.yesButton);
+        noButton = findViewById(R.id.noButton);
+        yesButton.setVisibility(View.INVISIBLE);
+        noButton.setVisibility(View.INVISIBLE);
+
 
         try{
             Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
             int nameIndex = c.getColumnIndex("name");
             int idIndex = c.getColumnIndex("id");
             c.moveToFirst();
-            while(c!=null){
+
+            do{
                 String listName = c.getString(nameIndex);
-                long id = c.getLong(idIndex);// does this work? the getFloat?
+                long id = c.getLong(idIndex);
                 if(!customLists.keySet().contains(listName))
                     customLists.put(listName, new ArrayList<Long>());
                 else customLists.get(listName).add(id);
-                c.moveToNext();
-            }
+            }while(c.moveToNext());
             c.close();
 
         }catch(Exception e){
@@ -402,9 +410,27 @@ MyListsFragment.OnFragmentInteractionListener {
 
     }
 
+    public void confirmNewListCreation(View view){
+        confirmTextView.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
+        confirmTextView.setVisibility(View.VISIBLE);
+        yesButton.setVisibility(View.VISIBLE);
+        noButton.setVisibility(View.VISIBLE);
+    }
+
+    public void cancelNewListCreation(View view){
+        confirmTextView.setVisibility(View.INVISIBLE);
+        yesButton.setVisibility(View.INVISIBLE);
+        noButton.setVisibility(View.INVISIBLE);
+    }
+
     public void createNewList(View view){
+        confirmTextView.setVisibility(View.INVISIBLE);
+        yesButton.setVisibility(View.INVISIBLE);
+        noButton.setVisibility(View.INVISIBLE);
 
         String nameInput = newName.getText().toString();
+
+        if(customLists.containsKey(nameInput)) return;
 
         try{
             for(long anIndex : theIDs){
@@ -422,9 +448,7 @@ MyListsFragment.OnFragmentInteractionListener {
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
 
-        if(myListsFragment != null) {
-            myListsFragment.updateInterface(getSpTheme());
-        }
+        if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
 
         theIDs = new ArrayList<>(); // we refresh theIDs for a new list
     }
@@ -527,7 +551,11 @@ MyListsFragment.OnFragmentInteractionListener {
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currentId);
 
-        tpControls.playFromUri(trackUri, null);
+        Bundle extras = new Bundle();
+        extras.putString("title", currSong.getTitle());
+        extras.putString("artist", currSong.getArtist());
+
+        tpControls.playFromUri(trackUri, extras);
         tpControls.play();
 
         if(listFragment != null) {
@@ -652,6 +680,10 @@ MyListsFragment.OnFragmentInteractionListener {
 
             newName.setHintTextColor(Color.LTGRAY);
 
+            confirmTextView.setBackgroundColor(Color.WHITE);
+            confirmTextView.setTextColor(Color.BLACK);
+            yesButton.setTextColor(Color.BLACK);
+            noButton.setTextColor(Color.BLACK);
         }
         else{
             customizeTabLayout(Color.WHITE);
@@ -661,6 +693,11 @@ MyListsFragment.OnFragmentInteractionListener {
             customizeSearchView(Color.WHITE);
 
             newName.setHintTextColor(Color.LTGRAY);
+
+            confirmTextView.setBackgroundColor(Color.BLACK);
+            confirmTextView.setTextColor(Color.WHITE);
+            yesButton.setTextColor(Color.WHITE);
+            noButton.setTextColor(Color.WHITE);
         }
 
         if(colorTaskLight!=null) {
@@ -702,8 +739,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
     private boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (result == PackageManager.PERMISSION_GRANTED)return true;
-        else return false;
+        return result == PackageManager.PERMISSION_GRANTED;
     }
     private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);

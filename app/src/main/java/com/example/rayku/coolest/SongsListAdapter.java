@@ -20,7 +20,7 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
     private ArrayList<Song> filteredData;
     private Typeface typeFace;
     private int theme;
-    Boolean[] selected; // to keep track of the colored rows
+    private Boolean[] selected; // to keep track of the colored rows
 
     SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
         this.context = context;
@@ -84,7 +84,6 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
 
         if(selected[i]) {
             view.setBackgroundColor(Color.argb(40, 128, 128, 128));
-
         }
 
         return view;
@@ -134,7 +133,7 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
         };
     }
 
-    public void select(int i, boolean isIt) {
+    void select(int i, boolean isIt) {
         selected[i] = isIt;
         notifyDataSetChanged();
     }

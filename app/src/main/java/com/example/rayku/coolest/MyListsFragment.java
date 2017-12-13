@@ -27,6 +27,8 @@ public class MyListsFragment extends Fragment{
     GridView listsGridView;
     Typeface typeFace;
 
+    ListsGridAdapter getAdapter(){ return adapter; }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_mylists, container, false);
@@ -68,13 +70,16 @@ public class MyListsFragment extends Fragment{
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                mListener.setList(listsGridView.getItemAtPosition(i).toString());
 
-                if(view.getBackground()==null && i!=0) {
-                    view.setBackgroundColor(Color.argb(60, 0, 0, 0));
+                if(view.getBackground()==null) {
+                    mListener.setList(listsGridView.getItemAtPosition(i).toString());
+                    adapter.select(listsGridView.getItemAtPosition(i).toString());
                 } else{
-                    view.setBackground(null);
+                    mListener.setList("MAIN");
+                    adapter.select("MAIN");
                 }
+
+
             }
         });
 
