@@ -96,16 +96,15 @@ MyListsFragment.OnFragmentInteractionListener {
     Typeface typeFace;
     SharedPreferences sharedPreferences;
 
-    Button createButton, yesButton, noButton;
+    Button createButton, yesBtn, noButton;
     EditText newName;
-    TextView textView, confirmTextView;
+    TextView textView, confirmText;
 
     SQLiteDatabase SQLiteDB;
 
     SongsListAdapter adapter, adapter2; // one for the ListFragment and other for the listToNew
     ListView listToNew;
     SearchView searchView;
-
 
     MediaControllerCompat.Callback mediaControllerCompatCallback;
 
@@ -261,6 +260,14 @@ MyListsFragment.OnFragmentInteractionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkPermission()) {
+                Log.e("permission", "Permission already granted.");
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            }
+        }
+
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
         //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
@@ -271,15 +278,7 @@ MyListsFragment.OnFragmentInteractionListener {
         typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
 
         bg1 = findViewById(R.id.bg1); bg2 = findViewById(R.id.bg2); bg3 = findViewById(R.id.bg3);  bg4 = findViewById(R.id.bg4);
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkPermission()) {
-                Log.e("permission", "Permission already granted.");
-            } else {
-                requestPermission();
-            }
-        }
-
+        
         sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
         Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
 
@@ -362,13 +361,13 @@ MyListsFragment.OnFragmentInteractionListener {
         createButton.setTypeface(typeFace);
         newName.setTypeface(typeFace);
 
-        confirmTextView = findViewById(R.id.confirmTextView);
-        confirmTextView.setTypeface(typeFace);
-        confirmTextView.setVisibility(View.INVISIBLE);
+        confirmText = findViewById(R.id.confirmText);
+        confirmText.setTypeface(typeFace);
+        confirmText.setVisibility(View.INVISIBLE);
 
-        yesButton = findViewById(R.id.yesButton);
-        noButton = findViewById(R.id.noButton);
-        yesButton.setVisibility(View.INVISIBLE);
+        yesBtn = findViewById(R.id.yesBtn);
+        noButton = findViewById(R.id.noBtn);
+        yesBtn.setVisibility(View.INVISIBLE);
         noButton.setVisibility(View.INVISIBLE);
 
 
@@ -412,8 +411,8 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void createNewList(View view){
-        confirmTextView.setVisibility(View.INVISIBLE);
-        yesButton.setVisibility(View.INVISIBLE);
+        confirmText.setVisibility(View.INVISIBLE);
+        yesBtn.setVisibility(View.INVISIBLE);
         noButton.setVisibility(View.INVISIBLE);
 
         newListLayout.setVisibility(View.INVISIBLE);
@@ -476,21 +475,26 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void confirmNewListCreation(View view){
-        confirmTextView.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
+        confirmText.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
+        confirmText.setBackground(null);
 
         newListLayout.setVisibility(View.INVISIBLE);
         tabLayout.setVisibility(View.INVISIBLE);
         viewPager.setVisibility(View.INVISIBLE);
 
-        confirmTextView.setVisibility(View.VISIBLE);
-        yesButton.setVisibility(View.VISIBLE);
+        confirmText.setVisibility(View.VISIBLE);
+        yesBtn.setVisibility(View.VISIBLE);
         noButton.setVisibility(View.VISIBLE);
     }
 
     public void cancelNewListCreation(View view){
-        confirmTextView.setVisibility(View.INVISIBLE);
-        yesButton.setVisibility(View.INVISIBLE);
+        confirmText.setVisibility(View.INVISIBLE);
+        yesBtn.setVisibility(View.INVISIBLE);
         noButton.setVisibility(View.INVISIBLE);
+
+        tabLayout.setVisibility(View.VISIBLE);
+        viewPager.setVisibility(View.VISIBLE);
+
     }
 
     public int getIdxFromId(long id){
@@ -705,9 +709,9 @@ MyListsFragment.OnFragmentInteractionListener {
 
             newName.setHintTextColor(Color.LTGRAY);
 
-            confirmTextView.setBackgroundColor(Color.WHITE);
-            confirmTextView.setTextColor(Color.BLACK);
-            yesButton.setTextColor(Color.BLACK);
+            confirmText.setBackgroundColor(Color.WHITE);
+            confirmText.setTextColor(Color.BLACK);
+            yesBtn.setTextColor(Color.BLACK);
             noButton.setTextColor(Color.BLACK);
         }
         else{
@@ -719,9 +723,9 @@ MyListsFragment.OnFragmentInteractionListener {
 
             newName.setHintTextColor(Color.LTGRAY);
 
-            confirmTextView.setBackgroundColor(Color.BLACK);
-            confirmTextView.setTextColor(Color.WHITE);
-            yesButton.setTextColor(Color.WHITE);
+            confirmText.setBackgroundColor(Color.BLACK);
+            confirmText.setTextColor(Color.WHITE);
+            yesBtn.setTextColor(Color.WHITE);
             noButton.setTextColor(Color.WHITE);
         }
 
@@ -763,23 +767,18 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     private boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        return result == PackageManager.PERMISSION_GRANTED;
+        return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
+                MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
     }
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(MainActivity.this,
-                            "Permission accepted", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this,
-                            "Permission denied", Toast.LENGTH_LONG).show();
-                }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(MainActivity.this, "Permission accepted", Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_LONG).show();
                 break;
         }
     }
