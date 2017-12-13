@@ -27,8 +27,6 @@ public class MyListsFragment extends Fragment{
     GridView listsGridView;
     Typeface typeFace;
 
-    ListsGridAdapter getAdapter(){ return adapter; }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_mylists, container, false);
@@ -58,6 +56,7 @@ public class MyListsFragment extends Fragment{
     }
 
     public void updateInterface(int theme){
+
         listsGridView = getView().findViewById(R.id.listsGridView);
 
         listsTitles = new ArrayList<>();
@@ -79,15 +78,16 @@ public class MyListsFragment extends Fragment{
                     adapter.select("MAIN");
                 }
 
-
             }
         });
 
         listsGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getContext(), "WANNA DELETE OMFG", Toast.LENGTH_SHORT).show();
-                return false;
+                mListener.deleteList(listsGridView.getItemAtPosition(i).toString());
+                Toast.makeText(getContext(), "DELETED SUCCESSFULLY", Toast.LENGTH_SHORT).show();
+                adapter.notifyDataSetChanged();
+                return true;
             }
         });
 
@@ -105,5 +105,6 @@ public class MyListsFragment extends Fragment{
         Typeface getTypeface();
         String getCurrList();
         int getSpTheme();
+        void deleteList(String listToDelete);
     }
 }

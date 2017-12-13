@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -410,23 +411,14 @@ MyListsFragment.OnFragmentInteractionListener {
 
     }
 
-    public void confirmNewListCreation(View view){
-        confirmTextView.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
-        confirmTextView.setVisibility(View.VISIBLE);
-        yesButton.setVisibility(View.VISIBLE);
-        noButton.setVisibility(View.VISIBLE);
-    }
-
-    public void cancelNewListCreation(View view){
-        confirmTextView.setVisibility(View.INVISIBLE);
-        yesButton.setVisibility(View.INVISIBLE);
-        noButton.setVisibility(View.INVISIBLE);
-    }
-
     public void createNewList(View view){
         confirmTextView.setVisibility(View.INVISIBLE);
         yesButton.setVisibility(View.INVISIBLE);
         noButton.setVisibility(View.INVISIBLE);
+
+        newListLayout.setVisibility(View.INVISIBLE);
+        tabLayout.setVisibility(View.VISIBLE);
+        viewPager.setVisibility(View.VISIBLE);
 
         String nameInput = newName.getText().toString();
 
@@ -443,29 +435,62 @@ MyListsFragment.OnFragmentInteractionListener {
 
         customLists.put(nameInput, theIDs);
 
-        newListLayout.setVisibility(View.INVISIBLE);
-
-        tabLayout.setVisibility(View.VISIBLE);
-        viewPager.setVisibility(View.VISIBLE);
-
         if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
 
+        for(long id : theIDs){
+            adapter2.select(getIdxFromId(id), false);
+        }
+
+        setupListsView();
+
         theIDs = new ArrayList<>(); // we refresh theIDs for a new list
+    }
+
+    public void deleteList(String listToDelete){
+
+        SQLiteDB.delete("lists", "name"+"='"+listToDelete+"'", null);
+        customLists.remove(listToDelete);
+        if(myListsFragment!=null) myListsFragment.updateInterface(getSpTheme());
+        currList = "MAIN";
+
     }
 
     public void setList(String listName){
         if(listName.equals("+")){
             newListLayout.setVisibility(View.VISIBLE);
-
             tabLayout.setVisibility(View.INVISIBLE);
             viewPager.setVisibility(View.INVISIBLE);
+        } else {
 
-        }else if(listName.equals(currList)){
-            currList = "MAIN";
-        } else{
-            currList = listName;
+            if (listName.equals(currList)) {
+                currList = "MAIN";
+            } else {
+                currList = listName;
+                auxIdx = 0;
+            }
+
+            if (!currList.equals("MAIN"))
+                playSong(getIdxFromId(customLists.get(currList).get(0)));
         }
-        auxIdx = 0;
+
+    }
+
+    public void confirmNewListCreation(View view){
+        confirmTextView.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
+
+        newListLayout.setVisibility(View.INVISIBLE);
+        tabLayout.setVisibility(View.INVISIBLE);
+        viewPager.setVisibility(View.INVISIBLE);
+
+        confirmTextView.setVisibility(View.VISIBLE);
+        yesButton.setVisibility(View.VISIBLE);
+        noButton.setVisibility(View.VISIBLE);
+    }
+
+    public void cancelNewListCreation(View view){
+        confirmTextView.setVisibility(View.INVISIBLE);
+        yesButton.setVisibility(View.INVISIBLE);
+        noButton.setVisibility(View.INVISIBLE);
     }
 
     public int getIdxFromId(long id){
@@ -573,10 +598,10 @@ MyListsFragment.OnFragmentInteractionListener {
             else if (currIdx < 1) currIdx = songsList.size() - 1;
             else --currIdx;
         } else{
-            ArrayList<Long> currList = customLists.get(this.currList);
-            if(auxIdx ==0) auxIdx = currList.size()-1;
+            ArrayList<Long> list = customLists.get(currList);
+            if(auxIdx == 0) auxIdx = list.size()-1;
             else auxIdx--;
-            currIdx = getIdxFromId(currList.get(auxIdx));
+            currIdx = getIdxFromId(list.get(auxIdx));
         }
         playSong(currIdx);
     }
@@ -589,10 +614,10 @@ MyListsFragment.OnFragmentInteractionListener {
             else ++currIdx;
             playSong(currIdx);
         } else{
-            ArrayList<Long> currList = customLists.get(this.currList);
-            if(auxIdx == currList.size() - 1) auxIdx = 0;
+            ArrayList<Long> list = customLists.get(currList);
+            if(auxIdx == list.size() - 1) auxIdx = 0;
             else auxIdx++;
-            currIdx = getIdxFromId(currList.get(auxIdx));
+            currIdx = getIdxFromId(list.get(auxIdx));
         }
         playSong(currIdx);
     }
@@ -745,7 +770,7 @@ MyListsFragment.OnFragmentInteractionListener {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
