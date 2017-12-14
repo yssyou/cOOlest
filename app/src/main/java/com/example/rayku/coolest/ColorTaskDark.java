@@ -15,8 +15,7 @@ class ColorTaskDark {
     private ShiftColorTask task0;
     private ColorTask task1;
 
-    ColorTaskDark(ThreadPoolExecutor mThreadPoolExecutor, int delay, int colorDelay,
-                  View bg1, View bg2, View bg3, View bg4){
+    ColorTaskDark(ThreadPoolExecutor mThreadPoolExecutor,  View bg1, View bg2, View bg3, View bg4){
 
         random = new Random();
 
@@ -24,8 +23,8 @@ class ColorTaskDark {
         task0 = new ShiftColorTask();
         task1 = new ColorTask();
 
-        task0.executeOnExecutor(mThreadPoolExecutor, colorDelay);
-        task1.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg1, bg2, bg3, bg4, delay));
+        task0.executeOnExecutor(mThreadPoolExecutor, 2200);
+        task1.executeOnExecutor(mThreadPoolExecutor, new ObjectToColorTask(bg1, bg2, bg3, bg4, 2200));
 
     }
 
@@ -46,7 +45,7 @@ class ColorTaskDark {
             delay = params[0].getDelay();
             while (!isCancelled()) {
                 publishProgress();
-                SystemClock.sleep(delay);
+                SystemClock.sleep(delay - random.nextInt(2000));
             }
             return null;
         }
@@ -61,12 +60,18 @@ class ColorTaskDark {
     }
 
     private void chooseColor(View view){
-        if(color == 0) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, 0, 0));
-        if(color == 1) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, random.nextInt(50)+10, 0));
-        if(color == 2) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+10, 0));
-        if(color == 3) view.setBackgroundColor(Color.rgb(0, random.nextInt(50)+10, random.nextInt(50)+10));
-        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, random.nextInt(50)+10));
-        if(color == 5) view.setBackgroundColor(Color.rgb(random.nextInt(50)+10, 0, random.nextInt(50)+10));
+
+        int intensity = 40;
+        int lowIntensity = 15;
+
+        if(color == 0) view.setBackgroundColor(Color.rgb(intensity, 0, 0));
+        if(color == 1) view.setBackgroundColor(Color.rgb(intensity, intensity/2, 0));
+        if(color == 2) view.setBackgroundColor(Color.rgb(0, intensity/2, 0));
+        if(color == 3) view.setBackgroundColor(Color.rgb(0, intensity/2, intensity));
+        if(color == 4) view.setBackgroundColor(Color.rgb(0, 0, intensity));
+        if(color == 5) view.setBackgroundColor(Color.rgb(intensity, 0, intensity));
+
+
     }
 
     private class ShiftColorTask extends AsyncTask<Integer, Void, Void>{

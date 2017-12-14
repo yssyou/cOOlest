@@ -702,7 +702,7 @@ MyListsFragment.OnFragmentInteractionListener {
             colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
         }
         if(getSpTheme()==3) {
-            colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+            colorTaskDark = new ColorTaskDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
         }
 
         if(gotFilePermission) switchTheme(getSpTheme());
@@ -764,7 +764,7 @@ MyListsFragment.OnFragmentInteractionListener {
             bg3.setBackgroundColor(Color.BLACK); bg4.setBackgroundColor(Color.BLACK);
         }
         if(i==1) colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-        if(i==3) colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+        if(i==3) colorTaskDark = new ColorTaskDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
 
     }
 

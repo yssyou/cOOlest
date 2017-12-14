@@ -289,8 +289,8 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
 
         MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
 
-        builder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
-        builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        builder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, BitmapFactory.decodeResource(getResources(), R.drawable.coolest_icon));
+        //builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
         builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, title);
         builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist);
 

@@ -50,7 +50,7 @@
             android:layout_height="100dp"
             android:background="@color/lightDark"
             android:gravity="center"
-            android:text="@string/_4_colors_dark"
+            android:text="@string/crazyPsycho"
             android:textSize="20sp" />
 
     </com.google.android.flexbox.FlexboxLayout>
