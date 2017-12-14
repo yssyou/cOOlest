@@ -6,20 +6,16 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -42,6 +38,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.anthonycr.grant.PermissionsManager;
+import com.anthonycr.grant.PermissionsResultAction;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -73,7 +73,6 @@ MyListsFragment.OnFragmentInteractionListener {
     static Song currSong;
     int currIdx, auxIdx;
 
-    ArrayBlockingQueue<Runnable> queue;
     ThreadPoolExecutor threadPoolExecutor;
     ColorTaskLight colorTaskLight;
     ColorTaskDark colorTaskDark;
@@ -87,8 +86,6 @@ MyListsFragment.OnFragmentInteractionListener {
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    private static final int PERMISSION_REQUEST_CODE = 1;
-
     public View bg1, bg2, bg3, bg4;
 
     private LinearLayout newListLayout;
@@ -96,7 +93,7 @@ MyListsFragment.OnFragmentInteractionListener {
     Typeface typeFace;
     SharedPreferences sharedPreferences;
 
-    Button createButton, yesBtn, noButton;
+    Button createButton, yesBtn, noButton, optionsBtn;
     EditText newName;
     TextView textView, confirmText;
 
@@ -107,6 +104,212 @@ MyListsFragment.OnFragmentInteractionListener {
     SearchView searchView;
 
     MediaControllerCompat.Callback mediaControllerCompatCallback;
+
+    boolean gotFilePermission = false;
+
+    public static class PlaceholderFragment extends Fragment {
+
+        public PlaceholderFragment() { }
+
+        public static Fragment newInstance(int sectionNumber) {
+            switch (sectionNumber){
+                case 1: return new SettingsFragment();
+                case 2: return new ListFragment();
+                case 3: return new SongFragment();
+                case 4: return new MyListsFragment();
+            }
+            return null;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_main, container, false);
+        }
+    }
+
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
+
+        @Override
+        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
+
+        @Override
+        public int getCount() { return 4; }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
+            switch(position){
+                case 0:
+                    settingsFragment = (SettingsFragment) createdFragment;
+                    break;
+                case 1:
+                    listFragment = (ListFragment) createdFragment;
+                    break;
+                case 2:
+                    songFragment = (SongFragment) createdFragment;
+                    break;
+                case 3:
+                    myListsFragment = (MyListsFragment) createdFragment;
+                    break;
+            }
+            return createdFragment;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0: return SettingsFragment.TITLE;
+                case 1: return ListFragment.TITLE;
+                case 2: return SongFragment.TITLE;
+                case 3: return MyListsFragment.TITLE;
+            }
+            return super.getPageTitle(position);
+        }
+    }
+
+    private void permissionsSetup(){
+        PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, new PermissionsResultAction() {
+
+                    @Override
+                    public void onGranted() {
+                        gotFilePermission = true;
+
+                        optionsBtn.setVisibility(View.INVISIBLE);
+                        confirmText.setVisibility(View.INVISIBLE);
+
+                        retrieveSongList();         // Doesn't require any views.
+                        setUpMediaBrowserService(); // Neither. However it does use fragments
+                        initialLayoutSetup();
+
+                    }
+
+                    @Override
+                    public void onDenied(String permission) {
+                        confirmText.setText(R.string.permissionsRationale);
+                        confirmText.setVisibility(View.VISIBLE);
+                        optionsBtn.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        bg1 = findViewById(R.id.bg1);
+        bg2 = findViewById(R.id.bg2);
+        bg3 = findViewById(R.id.bg3);
+        bg4 = findViewById(R.id.bg4);
+        newListLayout = findViewById(R.id.newListLayout);
+        confirmText = findViewById(R.id.confirmText);
+        yesBtn = findViewById(R.id.yesBtn);
+        noButton = findViewById(R.id.noBtn);
+        optionsBtn = findViewById(R.id.optionsBtn);
+        createButton = findViewById(R.id.createButton);
+        newName = findViewById(R.id.newName);
+        textView = findViewById(R.id.textView);
+        listToNew = findViewById(R.id.listToNew);
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        searchView = findViewById(R.id.searchView);
+
+        confirmText.setTypeface(typeFace);
+        textView.setTypeface(typeFace);
+        createButton.setTypeface(typeFace);
+        newName.setTypeface(typeFace);
+        optionsBtn.setTypeface(typeFace);
+
+        newListLayout.setVisibility(View.INVISIBLE);
+        confirmText.setVisibility(View.INVISIBLE);
+        yesBtn.setVisibility(View.INVISIBLE);
+        noButton.setVisibility(View.INVISIBLE);
+
+        SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
+
+        typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
+
+        sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
+        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
+
+        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(6));
+
+        permissionsSetup();
+
+    }
+
+    private void retrieveSongList(){
+        songsList = new ArrayList<>();
+
+        ContentResolver contentResolver = getContentResolver();
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Cursor c = contentResolver.query(uri, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            do {
+                String currTitle = c.getString(title);
+                String currentArtist = c.getString(artist);
+                long currId = c.getLong(id);
+                String currMimeType = c.getString(mimeType);
+                int currDuration = (int)c.getLong(duration);
+
+                if (currMimeType.equals("audio/mpeg"))
+                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
+
+            } while (c.moveToNext());
+        }
+
+        uri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
+        c = contentResolver.query(uri, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
+            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            do {
+                String currTitle = c.getString(title);
+                String currentArtist = c.getString(artist);
+                long currId = c.getLong(id);
+                String currMimeType = c.getString(mimeType);
+                int currDuration = (int)c.getLong(duration);
+
+                if (currMimeType.equals("audio/mpeg")
+                        && !currTitle.equals("shutdownsound")
+                        && !currTitle.equals("bootsound")) {
+                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
+                }
+            } while (c.moveToNext());
+        }
+
+        if (c!= null) c.close();
+
+        currIdx = 0;
+
+        if(songsList.size()==0){ // NEED TO CHECK FOR LATER
+            Toast.makeText(this, "Please store some music in your phone", Toast.LENGTH_SHORT).show();
+            SystemClock.sleep(5000);
+            this.finishAffinity();
+        } else {
+            currSong = songsList.get(currIdx);
+        }
+
+
+    }
 
     private void setUpMediaBrowserService() {
 
@@ -193,118 +396,54 @@ MyListsFragment.OnFragmentInteractionListener {
         mediaBrowserCompat.connect();
     }
 
-    public static class PlaceholderFragment extends Fragment {
+    private void initialLayoutSetup() {
 
-        public PlaceholderFragment() { }
+        customLists = new HashMap<>();
+        customLists.put("+", new ArrayList<Long>());
+        theIDs = new ArrayList<>();
 
-        public static Fragment newInstance(int sectionNumber) {
-            switch (sectionNumber){
-                case 1: return new SettingsFragment();
-                case 2: return new ListFragment();
-                case 3: return new SongFragment();
-                case 4: return new MyListsFragment();
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme()); // we update both adapters
+        adapter2 = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+
+        try {
+            Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
+            int nameIndex = c.getColumnIndex("name");
+            int idIndex = c.getColumnIndex("id");
+            c.moveToFirst();
+
+            do {
+                String listName = c.getString(nameIndex);
+                long id = c.getLong(idIndex);
+                if (!customLists.keySet().contains(listName))
+                    customLists.put(listName, new ArrayList<Long>());
+                else customLists.get(listName).add(id);
+            } while (c.moveToNext());
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        listToNew.setAdapter(adapter2);
+        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Song s = (Song) adapterView.getItemAtPosition(i);
+
+                if (view.getBackground() == null) {
+                    theIDs.add(s.getId());
+                    adapter2.select(i, true);
+                } else {
+                    theIDs.remove(s.getId());
+                    adapter2.select(i, false);
+                }
             }
-            return null;
-        }
+        });
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_main, container, false);
-        }
-    }
-
-    private class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
-
-        @Override
-        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
-
-        @Override
-        public int getCount() { return 4; }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
-            switch(position){
-                case 0:
-                    settingsFragment = (SettingsFragment) createdFragment;
-                    break;
-                case 1:
-                    listFragment = (ListFragment) createdFragment;
-                    break;
-                case 2:
-                    songFragment = (SongFragment) createdFragment;
-                    break;
-                case 3:
-                    myListsFragment = (MyListsFragment) createdFragment;
-                    break;
-            }
-            return createdFragment;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0: return SettingsFragment.TITLE;
-                case 1: return ListFragment.TITLE;
-                case 2: return SongFragment.TITLE;
-                case 3: return MyListsFragment.TITLE;
-            }
-            return super.getPageTitle(position);
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkPermission()) {
-                Log.e("permission", "Permission already granted.");
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-            }
-        }
-
-        SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
-        SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
-
-        newListLayout = findViewById(R.id.newListLayout);
-        newListLayout.setVisibility(View.INVISIBLE);
-
-        typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
-
-        bg1 = findViewById(R.id.bg1); bg2 = findViewById(R.id.bg2); bg3 = findViewById(R.id.bg3);  bg4 = findViewById(R.id.bg4);
-        
-        sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
-        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
-
-        retrieveSongList();
-        setUpMediaBrowserService();
-
-        queue = new ArrayBlockingQueue<>(6);
-        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, queue);
-
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        viewPager = findViewById(R.id.container);
-        viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(1);
-
-        tabLayout = findViewById(R.id.tab);
-        tabLayout.setupWithViewPager(viewPager);
-        customizeTabLayout(Color.BLACK);
-
-        setupListsView();
-
-        searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
+            public boolean onQueryTextSubmit(String query) { return false; }
 
             @Override
             public boolean onQueryTextChange(String newText) {
@@ -314,6 +453,11 @@ MyListsFragment.OnFragmentInteractionListener {
             }
         });
 
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setCurrentItem(1);
+        tabLayout.setupWithViewPager(viewPager);
+        customizeTabLayout(Color.BLACK);
     }
 
     private void customizeTabLayout(int textColor){
@@ -341,76 +485,12 @@ MyListsFragment.OnFragmentInteractionListener {
         closeIcon.setColorFilter(textColor);
     }
 
-    private void setupListsView(){
-
-        listToNew = findViewById(R.id.listToNew);
-
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme()); // we update both adapters
-        adapter2 = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
-
-        listToNew.setAdapter(adapter2);
-
-        customLists = new HashMap<>();
-        customLists.put("+", new ArrayList<Long>());
-
-        ((TextView)findViewById(R.id.textView)).setTypeface(typeFace);
-
-        createButton = findViewById(R.id.createButton);
-        newName = findViewById(R.id.newName);
-        textView = findViewById(R.id.textView);
-        createButton.setTypeface(typeFace);
-        newName.setTypeface(typeFace);
-
-        confirmText = findViewById(R.id.confirmText);
-        confirmText.setTypeface(typeFace);
-        confirmText.setVisibility(View.INVISIBLE);
-
-        yesBtn = findViewById(R.id.yesBtn);
-        noButton = findViewById(R.id.noBtn);
-        yesBtn.setVisibility(View.INVISIBLE);
-        noButton.setVisibility(View.INVISIBLE);
-
-
-        try{
-            Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
-            int nameIndex = c.getColumnIndex("name");
-            int idIndex = c.getColumnIndex("id");
-            c.moveToFirst();
-
-            do{
-                String listName = c.getString(nameIndex);
-                long id = c.getLong(idIndex);
-                if(!customLists.keySet().contains(listName))
-                    customLists.put(listName, new ArrayList<Long>());
-                else customLists.get(listName).add(id);
-            }while(c.moveToNext());
-            c.close();
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-        theIDs = new ArrayList<>();
-
-        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                Song s = (Song)adapterView.getItemAtPosition(i);
-
-                if(view.getBackground()==null) {
-                    theIDs.add(s.getId());
-                    adapter2.select(i, true);
-                } else{
-                    theIDs.remove(s.getId());
-                    adapter2.select(i, false);
-                }
-            }
-        });
-
+    public void optionsClick(View view){
+        if(!gotFilePermission) permissionsSetup();
     }
 
     public void createNewList(View view){
+
         confirmText.setVisibility(View.INVISIBLE);
         yesBtn.setVisibility(View.INVISIBLE);
         noButton.setVisibility(View.INVISIBLE);
@@ -440,9 +520,11 @@ MyListsFragment.OnFragmentInteractionListener {
             adapter2.select(getIdxFromId(id), false);
         }
 
-        setupListsView();
+        initialLayoutSetup();
 
         theIDs = new ArrayList<>(); // we refresh theIDs for a new list
+
+
     }
 
     public void deleteList(String listToDelete){
@@ -475,7 +557,9 @@ MyListsFragment.OnFragmentInteractionListener {
     }
 
     public void confirmNewListCreation(View view){
-        confirmText.setText("Are you sure you want to create the list " + newName.getText().toString() + " ?");
+
+        String theText = getString(R.string.confirmCreateList1) +" "+newName.getText().toString()+" "+ getString(R.string.confirmCreateList2);
+        confirmText.setText(theText);
         confirmText.setBackground(null);
 
         newListLayout.setVisibility(View.INVISIBLE);
@@ -501,69 +585,6 @@ MyListsFragment.OnFragmentInteractionListener {
         for(int i=0; i<songsList.size(); i++)
             if(songsList.get(i).getId() == id) return i;
         return 0;
-    }
-
-    private void retrieveSongList(){
-        songsList = new ArrayList<>();
-
-        ContentResolver contentResolver = getContentResolver();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor c = contentResolver.query(uri, null, null, null, null);
-        if (c != null && c.moveToFirst()) {
-            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
-            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
-            do {
-                String currTitle = c.getString(title);
-                String currentArtist = c.getString(artist);
-                long currId = c.getLong(id);
-                String currMimeType = c.getString(mimeType);
-                int currDuration = (int)c.getLong(duration);
-
-                if (currMimeType.equals("audio/mpeg"))
-                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
-
-            } while (c.moveToNext());
-        }
-
-        uri = MediaStore.Audio.Media.INTERNAL_CONTENT_URI;
-        c = contentResolver.query(uri, null, null, null, null);
-        if (c != null && c.moveToFirst()) {
-            int title = c.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artist = c.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
-            int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
-            do {
-                String currTitle = c.getString(title);
-                String currentArtist = c.getString(artist);
-                long currId = c.getLong(id);
-                String currMimeType = c.getString(mimeType);
-                int currDuration = (int)c.getLong(duration);
-
-                if (currMimeType.equals("audio/mpeg")
-                        && !currTitle.equals("shutdownsound")
-                        && !currTitle.equals("bootsound")) {
-                    songsList.add(0, new Song(currId, currTitle, currentArtist, currDuration));
-                }
-            } while (c.moveToNext());
-        }
-
-        if (c!= null) c.close();
-
-        currIdx = 0;
-
-        if(songsList.size()==0){
-            Toast.makeText(this, "Please store some music in your phone", Toast.LENGTH_SHORT).show();
-            SystemClock.sleep(5000);
-            this.finishAffinity();
-        } else {
-            currSong = songsList.get(currIdx);
-        }
-
-
     }
 
     public void playSong(int i){
@@ -679,6 +700,7 @@ MyListsFragment.OnFragmentInteractionListener {
     protected void onResume() {
         super.onResume();
 
+
         if(getSpTheme()==1) {
             colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
         }
@@ -686,7 +708,7 @@ MyListsFragment.OnFragmentInteractionListener {
             colorTaskDark = new ColorTaskDark(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
         }
 
-        switchTheme(getSpTheme());
+        if(gotFilePermission) switchTheme(getSpTheme());
 
     }
 
@@ -694,7 +716,7 @@ MyListsFragment.OnFragmentInteractionListener {
 
         sharedPreferences.edit().putInt("theme", i).apply();
 
-        setupListsView();
+        initialLayoutSetup();
 
         if(settingsFragment!=null) settingsFragment.updateTheme();
         if(songFragment!=null) songFragment.updateTheme();
@@ -764,23 +786,6 @@ MyListsFragment.OnFragmentInteractionListener {
         super.onDestroy();
         mediaBrowserCompat.disconnect();
         threadPoolExecutor.shutdown();
-    }
-
-    private boolean checkPermission() {
-        return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
-                MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    Toast.makeText(MainActivity.this, "Permission accepted", Toast.LENGTH_LONG).show();
-                else
-                    Toast.makeText(MainActivity.this, "Permission denied", Toast.LENGTH_LONG).show();
-                break;
-        }
     }
 
     public ArrayList<Song> getSongList() { return songsList; }

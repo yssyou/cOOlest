@@ -48,6 +48,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <Button
+            android:id="@+id/optionsBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:onClick="optionsClick"
+            android:text="Ir a Opciones!"
+            app:layout_constraintEnd_toEndOf="@+id/noBtn"
+            app:layout_constraintStart_toStartOf="@+id/guideline5"
+            app:layout_constraintTop_toBottomOf="@+id/confirmText" />
+
         <android.support.constraint.Guideline
             android:id="@+id/guideline7"
             android:layout_width="0dp"
@@ -135,12 +148,12 @@
             android:layout_height="wrap_content" />
 
         <android.support.design.widget.TabLayout
-            android:id="@+id/tab"
+            android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <android.support.v4.view.ViewPager
-            android:id="@+id/container"
+            android:id="@+id/viewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
@@ -180,7 +193,7 @@
                 android:layout_marginRight="50dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/which_songs_do_you_want_in_this_playlist"
+                android:text="@string/whichSongs"
                 android:textSize="16sp" />
 
             <ListView
