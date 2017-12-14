@@ -12,7 +12,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -37,7 +36,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.anthonycr.grant.PermissionsManager;
 import com.anthonycr.grant.PermissionsResultAction;
@@ -102,6 +100,8 @@ MyListsFragment.OnFragmentInteractionListener {
     SongsListAdapter adapter, adapter2; // one for the ListFragment and other for the listToNew
     ListView listToNew;
     SearchView searchView;
+    ImageView searchIcon;
+    ImageView searchCloseIcon;
 
     MediaControllerCompat.Callback mediaControllerCompatCallback;
 
@@ -180,10 +180,18 @@ MyListsFragment.OnFragmentInteractionListener {
                         optionsBtn.setVisibility(View.INVISIBLE);
                         confirmText.setVisibility(View.INVISIBLE);
 
-                        retrieveSongList();         // Doesn't require any views.
-                        setUpMediaBrowserService(); // Neither. However it does use fragments
-                        initialLayoutSetup();
+                        retrieveSongList();
 
+                        if(songsList.size()>0) {
+                            setUpMediaBrowserService();
+                            initialLayoutSetup();
+
+                            SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+                            viewPager.setAdapter(sectionsPagerAdapter);
+                            viewPager.setCurrentItem(1);
+                            tabLayout.setupWithViewPager(viewPager);
+                            customizeTabLayout(Color.BLACK);
+                        }
                     }
 
                     @Override
@@ -198,7 +206,6 @@ MyListsFragment.OnFragmentInteractionListener {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,6 +228,8 @@ MyListsFragment.OnFragmentInteractionListener {
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         searchView = findViewById(R.id.searchView);
+        searchIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_button);
+        searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
 
         confirmText.setTypeface(typeFace);
         textView.setTypeface(typeFace);
@@ -300,12 +309,12 @@ MyListsFragment.OnFragmentInteractionListener {
 
         currIdx = 0;
 
-        if(songsList.size()==0){ // NEED TO CHECK FOR LATER
-            Toast.makeText(this, "Please store some music in your phone", Toast.LENGTH_SHORT).show();
-            SystemClock.sleep(5000);
-            this.finishAffinity();
+        if(songsList.size()==0){
+            confirmText.setText(R.string.couldntFindMusic);
+            confirmText.setVisibility(View.VISIBLE);
         } else {
             currSong = songsList.get(currIdx);
+
         }
 
 
@@ -452,12 +461,6 @@ MyListsFragment.OnFragmentInteractionListener {
                 return false;
             }
         });
-
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(sectionsPagerAdapter);
-        viewPager.setCurrentItem(1);
-        tabLayout.setupWithViewPager(viewPager);
-        customizeTabLayout(Color.BLACK);
     }
 
     private void customizeTabLayout(int textColor){
@@ -477,12 +480,8 @@ MyListsFragment.OnFragmentInteractionListener {
 
     private void customizeSearchView(int textColor){
         ((TextView) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setTextColor(textColor);
-
-        ImageView searchIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_button);
-        ImageView closeIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
-
         searchIcon.setColorFilter(textColor);
-        closeIcon.setColorFilter(textColor);
+        searchCloseIcon.setColorFilter(textColor);
     }
 
     public void optionsClick(View view){
@@ -565,7 +564,6 @@ MyListsFragment.OnFragmentInteractionListener {
         newListLayout.setVisibility(View.INVISIBLE);
         tabLayout.setVisibility(View.INVISIBLE);
         viewPager.setVisibility(View.INVISIBLE);
-
         confirmText.setVisibility(View.VISIBLE);
         yesBtn.setVisibility(View.VISIBLE);
         noButton.setVisibility(View.VISIBLE);
@@ -699,7 +697,6 @@ MyListsFragment.OnFragmentInteractionListener {
     @Override
     protected void onResume() {
         super.onResume();
-
 
         if(getSpTheme()==1) {
             colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);

@@ -8,7 +8,7 @@
     <string name="create">CREATE!</string>
     <string name="no">NO</string>
     <string name="yes">YES</string>
-    <string name="permissionsRationale">cOOlest requires a permission to play your music.</string>
+    <string name="permissionsRationale">cOOlest requires a permission to play your music :D</string>
     <string name="confirmCreateList1">Are you sure you want to create the list</string>
     <string name="confirmCreateList2">\?</string>
 
@@ -16,5 +16,7 @@
     <string name="_4_colors">4-COLORS</string>
     <string name="black">BLACK</string>
     <string name="_4_colors_dark">4-COLORS-DARK</string>
+    <string name="couldntFindMusic">We couldn\'t find any music files on your phone and your sdcard. Please add some and open cOOlest again :D</string>
+    <string name="givePermission">Give permission</string>
 
 </resources>
