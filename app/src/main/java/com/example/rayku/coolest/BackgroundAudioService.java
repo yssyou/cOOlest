@@ -34,7 +34,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
     private MediaPlayer mediaPlayer;
     private MediaSessionCompat mediaSessionCompat;
 
-
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context context, Intent intent) {

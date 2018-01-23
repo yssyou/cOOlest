@@ -1,5 +1,9 @@
 package com.example.rayku.coolest;
 
+import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
+
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -23,18 +27,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.anthonycr.grant.PermissionsManager;
@@ -48,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SettingsFragment.OnFragmentInteractionListener,
 ListFragment.OnFragmentInteractionListener, SongFragment.OnFragmentInteractionListener,
-MyListsFragment.OnFragmentInteractionListener {
+MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInteractionListener {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
@@ -86,19 +84,12 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public View bg1, bg2, bg3, bg4;
 
-    private LinearLayout newListLayout;
-
     Typeface typeFace;
     SharedPreferences sharedPreferences;
 
-    Button createButton, yesBtn, noButton, optionsBtn;
-    EditText newName;
-    TextView textView, confirmText;
-
     SQLiteDatabase SQLiteDB;
 
-    SongsListAdapter adapter, adapter2; // one for the ListFragment and other for the listToNew
-    ListView listToNew;
+    SongsListAdapter adapter; // one for the ListFragment and other for the listToNew
     SearchView searchView;
     ImageView searchIcon;
     ImageView searchCloseIcon;
@@ -177,8 +168,8 @@ MyListsFragment.OnFragmentInteractionListener {
                     public void onGranted() {
                         gotFilePermission = true;
 
-                        optionsBtn.setVisibility(View.INVISIBLE);
-                        confirmText.setVisibility(View.INVISIBLE);
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
 
                         retrieveSongList();
 
@@ -196,9 +187,12 @@ MyListsFragment.OnFragmentInteractionListener {
 
                     @Override
                     public void onDenied(String permission) {
-                        confirmText.setText(R.string.permissionsRationale);
-                        confirmText.setVisibility(View.VISIBLE);
-                        optionsBtn.setVisibility(View.VISIBLE);
+
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+
                     }
                 });
     }
@@ -216,31 +210,12 @@ MyListsFragment.OnFragmentInteractionListener {
         bg2 = findViewById(R.id.bg2);
         bg3 = findViewById(R.id.bg3);
         bg4 = findViewById(R.id.bg4);
-        newListLayout = findViewById(R.id.newListLayout);
-        confirmText = findViewById(R.id.confirmText);
-        yesBtn = findViewById(R.id.yesBtn);
-        noButton = findViewById(R.id.noBtn);
-        optionsBtn = findViewById(R.id.optionsBtn);
-        createButton = findViewById(R.id.createButton);
-        newName = findViewById(R.id.newName);
-        textView = findViewById(R.id.textView);
-        listToNew = findViewById(R.id.listToNew);
+
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         searchView = findViewById(R.id.searchView);
         searchIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_button);
         searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
-
-        confirmText.setTypeface(typeFace);
-        textView.setTypeface(typeFace);
-        createButton.setTypeface(typeFace);
-        newName.setTypeface(typeFace);
-        optionsBtn.setTypeface(typeFace);
-
-        newListLayout.setVisibility(View.INVISIBLE);
-        confirmText.setVisibility(View.INVISIBLE);
-        yesBtn.setVisibility(View.INVISIBLE);
-        noButton.setVisibility(View.INVISIBLE);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
         //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
@@ -310,8 +285,12 @@ MyListsFragment.OnFragmentInteractionListener {
         currIdx = 0;
 
         if(songsList.size()==0){
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
+            transaction.addToBackStack(null);
+            transaction.commit();
             confirmText.setText(R.string.couldntFindMusic);
-            confirmText.setVisibility(View.VISIBLE);
         } else {
             currSong = songsList.get(currIdx);
 
@@ -411,8 +390,7 @@ MyListsFragment.OnFragmentInteractionListener {
         customLists.put("+", new ArrayList<Long>());
         theIDs = new ArrayList<>();
 
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme()); // we update both adapters
-        adapter2 = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
 
         try {
             Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
@@ -433,23 +411,6 @@ MyListsFragment.OnFragmentInteractionListener {
             e.printStackTrace();
         }
 
-        listToNew.setAdapter(adapter2);
-        listToNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                Song s = (Song) adapterView.getItemAtPosition(i);
-
-                if (view.getBackground() == null) {
-                    theIDs.add(s.getId());
-                    adapter2.select(i, true);
-                } else {
-                    theIDs.remove(s.getId());
-                    adapter2.select(i, false);
-                }
-            }
-        });
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
@@ -457,7 +418,6 @@ MyListsFragment.OnFragmentInteractionListener {
             @Override
             public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
-                adapter2.getFilter().filter(newText);
                 return false;
             }
         });
@@ -490,15 +450,13 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public void createNewList(View view){
 
-        confirmText.setVisibility(View.INVISIBLE);
-        yesBtn.setVisibility(View.INVISIBLE);
-        noButton.setVisibility(View.INVISIBLE);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
 
-        newListLayout.setVisibility(View.INVISIBLE);
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
 
-        String nameInput = newName.getText().toString();
+        String nameInput = "JUEJUJEUJEUJEUEJUEJUEJE";
 
         if(customLists.containsKey(nameInput)) return;
 
@@ -514,10 +472,6 @@ MyListsFragment.OnFragmentInteractionListener {
         customLists.put(nameInput, theIDs);
 
         if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
-
-        for(long id : theIDs){
-            adapter2.select(getIdxFromId(id), false);
-        }
 
         initialLayoutSetup();
 
@@ -537,9 +491,15 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public void setList(String listName){
         if(listName.equals("+")){
-            newListLayout.setVisibility(View.VISIBLE);
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.frameLayout, new FragmentNewList(),"FragmentNewList");
+            transaction.addToBackStack(null);
+            transaction.commit();
+
             tabLayout.setVisibility(View.INVISIBLE);
             viewPager.setVisibility(View.INVISIBLE);
+
         } else {
 
             if (listName.equals(currList)) {
@@ -557,22 +517,22 @@ MyListsFragment.OnFragmentInteractionListener {
 
     public void confirmNewListCreation(View view){
 
-        String theText = getString(R.string.confirmCreateList1) +" "+newName.getText().toString()+" "+ getString(R.string.confirmCreateList2);
+        String theText = getString(R.string.confirmCreateList1) +" "+ "asdasdasdadasdasdasdasd "+ getString(R.string.confirmCreateList2);
         confirmText.setText(theText);
         confirmText.setBackground(null);
 
-        newListLayout.setVisibility(View.INVISIBLE);
         tabLayout.setVisibility(View.INVISIBLE);
         viewPager.setVisibility(View.INVISIBLE);
-        confirmText.setVisibility(View.VISIBLE);
-        yesBtn.setVisibility(View.VISIBLE);
-        noButton.setVisibility(View.VISIBLE);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     public void cancelNewListCreation(View view){
-        confirmText.setVisibility(View.INVISIBLE);
-        yesBtn.setVisibility(View.INVISIBLE);
-        noButton.setVisibility(View.INVISIBLE);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
 
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
@@ -721,31 +681,11 @@ MyListsFragment.OnFragmentInteractionListener {
 
         if(i==0 || i==1){
             customizeTabLayout(Color.BLACK);
-            newName.setTextColor(Color.BLACK);
-            textView.setTextColor(Color.BLACK);
-            createButton.setTextColor(Color.BLACK);
             customizeSearchView(Color.BLACK);
-
-            newName.setHintTextColor(Color.LTGRAY);
-
-            confirmText.setBackgroundColor(Color.WHITE);
-            confirmText.setTextColor(Color.BLACK);
-            yesBtn.setTextColor(Color.BLACK);
-            noButton.setTextColor(Color.BLACK);
         }
         else{
             customizeTabLayout(Color.WHITE);
-            newName.setTextColor(Color.WHITE);
-            textView.setTextColor(Color.WHITE);
-            createButton.setTextColor(Color.WHITE);
             customizeSearchView(Color.WHITE);
-
-            newName.setHintTextColor(Color.LTGRAY);
-
-            confirmText.setBackgroundColor(Color.BLACK);
-            confirmText.setTextColor(Color.WHITE);
-            yesBtn.setTextColor(Color.WHITE);
-            noButton.setTextColor(Color.WHITE);
         }
 
         if(colorTaskLight!=null) {
@@ -770,8 +710,11 @@ MyListsFragment.OnFragmentInteractionListener {
 
     @Override
     public void onBackPressed() {
-        if(newListLayout.getVisibility()== View.VISIBLE){
-            newListLayout.setVisibility(View.INVISIBLE);
+        if(getSupportFragmentManager().findFragmentByTag("FragmentNewList")!=null){
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentNewList")).commit();
+
             tabLayout.setVisibility(View.VISIBLE);
             viewPager.setVisibility(View.VISIBLE);
         }
@@ -795,5 +738,7 @@ MyListsFragment.OnFragmentInteractionListener {
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
     public SongsListAdapter getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
+    public ArrayList<Long> getTheIDs(){ return theIDs; }
+
 
 }

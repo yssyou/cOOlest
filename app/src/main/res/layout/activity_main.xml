@@ -8,7 +8,6 @@
     android:fitsSystemWindows="true"
     tools:context="com.example.rayku.coolest.MainActivity">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -44,98 +43,6 @@
 
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <Button
-            android:id="@+id/optionsBtn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="8dp"
-            android:onClick="optionsClick"
-            android:text="@string/givePermission"
-            app:layout_constraintEnd_toEndOf="@+id/noBtn"
-            app:layout_constraintStart_toStartOf="@+id/guideline5"
-            app:layout_constraintTop_toBottomOf="@+id/confirmText" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline7"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.45" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.45" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline2"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.55" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline5"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.2" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline6"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.8" />
-
-        <Button
-            android:id="@+id/yesBtn"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/lightDark"
-            app:layout_constraintDimensionRatio="H, 1:.7"
-            android:onClick="createNewList"
-            android:text="@string/yes"
-            app:layout_constraintEnd_toStartOf="@+id/guideline"
-            app:layout_constraintStart_toStartOf="@+id/guideline5"
-            app:layout_constraintTop_toBottomOf="@+id/confirmText" />
-
-        <Button
-            android:id="@+id/noBtn"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/lightDark"
-            app:layout_constraintDimensionRatio="H, 1:.7"
-            android:onClick="cancelNewListCreation"
-            android:text="@string/no"
-            app:layout_constraintEnd_toStartOf="@+id/guideline6"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
-            app:layout_constraintTop_toBottomOf="@+id/confirmText" />
-
-        <TextView
-            android:id="@+id/confirmText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="60dp"
-            android:layout_marginStart="60dp"
-            android:text="TextView"
-            android:gravity="center"
-            android:textSize="20sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline7" />
-    </android.support.constraint.ConstraintLayout>
-
     <LinearLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
@@ -159,62 +66,13 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/newListLayout"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="50dp"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <EditText
-                android:id="@+id/newName"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginLeft="50dp"
-                android:layout_marginRight="50dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:hint="@string/name" />
-
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="50dp"
-                android:layout_marginRight="50dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/whichSongs"
-                android:textSize="16sp" />
-
-            <ListView
-                android:id="@+id/listToNew"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="5" />
-
-            <Button
-                android:id="@+id/createButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="#00000000"
-                android:onClick="confirmNewListCreation"
-                android:text="@string/create"
-                android:textSize="26sp" />
-
-        </LinearLayout>
-
-    </android.support.constraint.ConstraintLayout>
+    </FrameLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>
