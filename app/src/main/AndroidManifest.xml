@@ -5,15 +5,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-
-
     <application
         android:allowBackup="true"
-
-
         android:icon="@drawable/coolest_icon"
         android:label="@string/app_name"
         android:roundIcon="@drawable/coolest_icon_round"
@@ -22,13 +15,16 @@
         <activity
             android:name="com.example.rayku.coolest.MainActivity"
             android:windowSoftInputMode="adjustPan">
+        </activity>
 
+        <activity android:name=".ActivityPermissions">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
 
         <service android:name="com.example.rayku.coolest.BackgroundAudioService">
             <intent-filter>

@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">cOOlest</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="name">NAME</string>
     <string name="whichSongs">Which songs do you want in this playlist?</string>
     <string name="create">CREATE!</string>
@@ -16,7 +14,11 @@
     <string name="_4_colors">4-COLORS</string>
     <string name="black">BLACK</string>
     <string name="crazyPsycho">DARK-X</string>
+
     <string name="couldntFindMusic">We couldn\'t find any music files on your phone and your sdcard. Please add some and open cOOlest again :D</string>
-    <string name="givePermission">Give permission</string>
+
+    <string name="coolest_requires_some_permissions_to_run">ForumsApp requires some\npermissions to run.</string>
+    <string name="give_permissions">GIVE PERMISSIONS</string>
+
 
 </resources>

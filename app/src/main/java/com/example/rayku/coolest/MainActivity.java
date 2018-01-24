@@ -2,7 +2,6 @@ package com.example.rayku.coolest;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -31,7 +30,6 @@ import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -64,8 +62,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     HashMap<String, ArrayList<Long>> customLists;
     String currList = "MAIN";
 
-    ArrayList<Long> theIDs;
-
     static Song currSong;
     int currIdx, auxIdx;
 
@@ -97,26 +93,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     MediaControllerCompat.Callback mediaControllerCompatCallback;
 
     boolean gotFilePermission = false;
-
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() { }
-
-        public static Fragment newInstance(int sectionNumber) {
-            switch (sectionNumber){
-                case 1: return new SettingsFragment();
-                case 2: return new ListFragment();
-                case 3: return new SongFragment();
-                case 4: return new MyListsFragment();
-            }
-            return null;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_main, container, false);
-        }
-    }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -160,45 +136,24 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         }
     }
 
-    private void permissionsSetup(){
-        PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, new PermissionsResultAction() {
+    public static class PlaceholderFragment extends Fragment {
 
-                    @Override
-                    public void onGranted() {
-                        gotFilePermission = true;
+        public PlaceholderFragment() { }
 
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
+        public static Fragment newInstance(int sectionNumber) {
+            switch (sectionNumber){
+                case 1: return new SettingsFragment();
+                case 2: return new ListFragment();
+                case 3: return new SongFragment();
+                case 4: return new MyListsFragment();
+            }
+            return null;
+        }
 
-                        retrieveSongList();
-
-                        if(songsList.size()>0) {
-                            setUpMediaBrowserService();
-                            initialLayoutSetup();
-
-                            SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-                            viewPager.setAdapter(sectionsPagerAdapter);
-                            viewPager.setCurrentItem(1);
-                            tabLayout.setupWithViewPager(viewPager);
-                            customizeTabLayout(Color.BLACK);
-                        }
-                    }
-
-                    @Override
-                    public void onDenied(String permission) {
-
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-
-                    }
-                });
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_main, container, false);
+        }
     }
 
     @Override
@@ -218,17 +173,42 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
         typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
 
         sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
-        Log.i("theme", Integer.toString(sharedPreferences.getInt("theme", 0)));
+        sharedPreferences.edit().putInt("theme", 0).apply();
 
         threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(6));
 
-        permissionsSetup();
+        retrieveSongList();
+
+        if(songsList.size()>0) {
+            setUpMediaBrowserService();
+            adapter = new SongsListAdapter(getApplicationContext(), songsList, typeFace, getSpTheme());
+
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) { return false; }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    adapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
+
+            refreshCustomLists();
+
+            SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(sectionsPagerAdapter);
+            viewPager.setCurrentItem(1);
+            tabLayout.setupWithViewPager(viewPager);
+            customizeTabLayout(Color.BLACK);
+        }
+
 
     }
 
@@ -284,16 +264,8 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         currIdx = 0;
 
-        if(songsList.size()==0){
-
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
-            transaction.addToBackStack(null);
-            transaction.commit();
-            confirmText.setText(R.string.couldntFindMusic);
-        } else {
+        if(songsList.size()!=0){
             currSong = songsList.get(currIdx);
-
         }
 
 
@@ -384,13 +356,12 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         mediaBrowserCompat.connect();
     }
 
-    private void initialLayoutSetup() {
+    private void refreshCustomLists() {
 
         customLists = new HashMap<>();
         customLists.put("+", new ArrayList<Long>());
-        theIDs = new ArrayList<>();
 
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+        //adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
 
         try {
             Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
@@ -410,17 +381,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return false;
-            }
-        });
     }
 
     private void customizeTabLayout(int textColor){
@@ -444,40 +404,32 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         searchCloseIcon.setColorFilter(textColor);
     }
 
-    public void optionsClick(View view){
-        if(!gotFilePermission) permissionsSetup();
-    }
+    public void createNewList(ArrayList<Long> theIDs, String listTitle){
 
-    public void createNewList(View view){
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
+        if(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")!=null) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
+        }
 
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
 
-        String nameInput = "JUEJUJEUJEUJEUEJUEJUEJE";
-
-        if(customLists.containsKey(nameInput)) return;
+        if(customLists.containsKey(listTitle)) return;
 
         try{
             for(long anIndex : theIDs){
-                String stringToAddIndex = "INSERT INTO lists (name, id) VALUES (" + "'"+nameInput+"', "+Long.toString(anIndex)+")";
+                String stringToAddIndex = "INSERT INTO lists (name, id) VALUES (" + "'"+listTitle+"', "+Long.toString(anIndex)+")";
                 SQLiteDB.execSQL(stringToAddIndex);
             }
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        customLists.put(nameInput, theIDs);
+        customLists.put(listTitle, theIDs);
 
         if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
 
-        initialLayoutSetup();
-
-        theIDs = new ArrayList<>(); // we refresh theIDs for a new list
-
-
+        //refreshCustomLists();
     }
 
     public void deleteList(String listToDelete){
@@ -512,30 +464,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             if (!currList.equals("MAIN"))
                 playSong(getIdxFromId(customLists.get(currList).get(0)));
         }
-
-    }
-
-    public void confirmNewListCreation(View view){
-
-        String theText = getString(R.string.confirmCreateList1) +" "+ "asdasdasdadasdasdasdasd "+ getString(R.string.confirmCreateList2);
-        confirmText.setText(theText);
-        confirmText.setBackground(null);
-
-        tabLayout.setVisibility(View.INVISIBLE);
-        viewPager.setVisibility(View.INVISIBLE);
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.frameLayout, new FragmentConfirm(),"FragmentConfirm");
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-    public void cancelNewListCreation(View view){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(getSupportFragmentManager().findFragmentByTag("FragmentConfirm")).commit();
-
-        tabLayout.setVisibility(View.VISIBLE);
-        viewPager.setVisibility(View.VISIBLE);
 
     }
 
@@ -673,7 +601,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         sharedPreferences.edit().putInt("theme", i).apply();
 
-        initialLayoutSetup();
+        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
 
         if(settingsFragment!=null) settingsFragment.updateTheme();
         if(songFragment!=null) songFragment.updateTheme();
@@ -735,10 +663,12 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     public int getCurrentState(){ return currState; }
     public int getCurrentLoop(){ return currLoop; }
     public int getCurrentRand(){ return currRand; }
-    public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
+    public int getSpTheme(){
+        return sharedPreferences.getInt("theme", 0);
+        //return 0;
+    }
     public SongsListAdapter getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
-    public ArrayList<Long> getTheIDs(){ return theIDs; }
 
 
 }
