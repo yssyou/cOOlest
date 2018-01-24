@@ -5,12 +5,14 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,13 +25,16 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
 
     ArrayList<Song> songsList;
     ArrayList<Long> theIDs;
-    AdapterSongsList adapter2;
+    AdapterSongsList adapter;
     ListView listView;
     EditText editText;
     TextView textView;
     Typeface typeface;
     int spTheme;
     Button createBtn;
+    SearchView searchView;
+    ImageView searchIcon;
+    ImageView searchCloseIcon;
 
 
     @Override
@@ -54,6 +59,9 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
         editText = getView().findViewById(R.id.editText);
         textView = getView().findViewById(R.id.textView);
         createBtn = getView().findViewById(R.id.createBtn);
+        searchView = getView().findViewById(R.id.searchView);
+        searchIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_button);
+        searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
         createBtn.setOnClickListener(this);
 
         editText.setTypeface(typeface);
@@ -65,9 +73,9 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
         songsList = mListener.getSongList();
         theIDs = new ArrayList<>();
 
-        adapter2 = new AdapterSongsList(getContext(), songsList, typeface, spTheme);
+        adapter = new AdapterSongsList(getContext(), songsList, typeface, spTheme);
 
-        listView.setAdapter(adapter2);
+        listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -75,12 +83,25 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
                 Song s = (Song) adapterView.getItemAtPosition(i);
 
                 if (view.getBackground() == null) {
-                    theIDs.add(s.getId());
-                    adapter2.select(i, true);
+                    if(!theIDs.contains(s.getId())) {
+                        theIDs.add(s.getId());
+                        adapter.select(s, true);
+                    }
                 } else {
                     theIDs.remove(s.getId());
-                    adapter2.select(i, false);
+                    adapter.select(s, false);
                 }
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) { return false; }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
             }
         });
 
@@ -101,6 +122,14 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
 
         textView.setTextColor(color);
         createBtn.setTextColor(color);
+
+        customizeSearchView(color);
+    }
+
+    private void customizeSearchView(int textColor){
+        ((TextView) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setTextColor(textColor);
+        searchIcon.setColorFilter(textColor);
+        searchCloseIcon.setColorFilter(textColor);
     }
 
     @Override

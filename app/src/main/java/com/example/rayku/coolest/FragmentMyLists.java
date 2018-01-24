@@ -69,18 +69,9 @@ public class FragmentMyLists extends Fragment{
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
                 String listName = listsGridView.getItemAtPosition(i).toString();
-                mListener.setList(listName);
                 adapter.select(listName);
+                mListener.setList(listName);
 
-                /*
-                if(view.getBackground()==null) {
-                    mListener.setList(listsGridView.getItemAtPosition(i).toString());
-                    adapter.select(listsGridView.getItemAtPosition(i).toString());
-                } else{
-                    mListener.setList("MAIN");
-                    adapter.select("MAIN");
-                }
-                */
 
             }
         });

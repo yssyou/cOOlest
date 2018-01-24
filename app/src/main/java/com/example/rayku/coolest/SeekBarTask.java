@@ -13,7 +13,7 @@ public class SeekBarTask extends AsyncTask<MediaControllerCompat.TransportContro
         tpControls = o[0];
         while (!isCancelled()) {
             publishProgress();
-            SystemClock.sleep(2000);
+            SystemClock.sleep(400);
         }
         return null;
     }

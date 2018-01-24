@@ -1,14 +1,8 @@
 package com.example.rayku.coolest;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +12,6 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.FileDescriptor;
 import java.util.ArrayList;
 
 class AdapterSongsList extends BaseAdapter implements Filterable{
@@ -27,18 +20,12 @@ class AdapterSongsList extends BaseAdapter implements Filterable{
     private ArrayList<Song> filteredData;
     private Typeface typeFace;
     private int theme;
-    private Boolean[] selected; // to keep track of the colored rows
 
     AdapterSongsList(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
         this.context = context;
         this.originalData = originalData;
         this.typeFace = typeFace;
         this.theme = theme;
-
-        selected = new Boolean[originalData.size()];
-        for (int i = 0; i < originalData.size(); i++) {
-            selected[i] = false;
-        }
 
         filteredData = originalData;
     }
@@ -89,9 +76,10 @@ class AdapterSongsList extends BaseAdapter implements Filterable{
 
         view.setBackground(null);
 
-        if(selected[i]) {
+        if(filteredData.get(i).selected) {
             view.setBackgroundColor(Color.argb(40, 128, 128, 128));
         }
+
 
         return view;
     }
@@ -140,35 +128,19 @@ class AdapterSongsList extends BaseAdapter implements Filterable{
         };
     }
 
-    void select(int i, boolean isIt) {
-        selected[i] = isIt;
+    void select(Song song, boolean isIt) {
+        for (int i = 0; i < originalData.size(); i++) {
+            if(originalData.get(i) == song){
+                originalData.get(i).selected = isIt;
+            }
+        }
         notifyDataSetChanged();
     }
 
-
-
-
-    public Bitmap getAlbumart(Long album_id)
-    {
-        Bitmap bm = null;
-        try
-        {
-            final Uri sArtworkUri = Uri
-                    .parse("content://media/external/audio/albumart");
-
-            Uri uri = ContentUris.withAppendedId(sArtworkUri, album_id);
-
-            ParcelFileDescriptor pfd = context.getContentResolver()
-                    .openFileDescriptor(uri, "r");
-
-            if (pfd != null)
-            {
-                FileDescriptor fd = pfd.getFileDescriptor();
-                bm = BitmapFactory.decodeFileDescriptor(fd);
-            }
-        } catch (Exception e) {
-        }
-        return bm;
+    public int getIdxFromId(long id){
+        for(int i=0; i<originalData.size(); i++)
+            if(originalData.get(i).getId() == id) return i;
+        return 0;
     }
 
 }

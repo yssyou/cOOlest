@@ -55,11 +55,10 @@ class AdapterListsGrid extends BaseAdapter {
 
         viewHolder.listTitle.setText(listsTitles.get(i));
 
-        view.setBackground(null);
-
         CharSequence title = viewHolder.listTitle.getText();
-        if(title.equals(currList) && !title.equals("+"))
+        if(title.equals(currList))
             view.setBackgroundColor(Color.argb(40, 128, 128, 128));
+        else view.setBackground(null);
 
         return view;
     }
@@ -79,8 +78,15 @@ class AdapterListsGrid extends BaseAdapter {
         return position;
     }
 
-    void select(String currList) {
-        this.currList = currList;
+    void select(String clickedList) {
+        if(clickedList.equals("+"))
+            return;
+        if(clickedList.equals(this.currList)){
+            this.currList = "MAIN";
+            notifyDataSetChanged();
+            return;
+        }
+        this.currList = clickedList;
         notifyDataSetChanged();
     }
 }

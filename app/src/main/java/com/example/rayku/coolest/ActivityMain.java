@@ -80,7 +80,7 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     SQLiteDatabase SQLiteDB;
 
-    AdapterSongsList adapter; // one for the FragmentList and other for the listToNew
+    AdapterSongsList adapter;
     SearchView searchView;
     ImageView searchIcon;
     ImageView searchCloseIcon;
@@ -345,6 +345,7 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
+        searchView.setVisibility(View.VISIBLE);
 
         if(customLists.containsKey(listTitle)) return;
 
@@ -382,21 +383,17 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
             tabLayout.setVisibility(View.INVISIBLE);
             viewPager.setVisibility(View.INVISIBLE);
+            searchView.setVisibility(View.INVISIBLE);
 
-            currList = "MAIN";
-
-        } else {
-
-            if (listName.equals(currList)) {
-                currList = "MAIN";
-            } else {
-                currList = listName;
-                auxIdx = 0;
-            }
-
-            if (!currList.equals("MAIN"))
-                playSong(getIdxFromId(customLists.get(currList).get(0)));
+            return;
         }
+        if(listName.equals(currList)){
+            currList = "MAIN";
+            return;
+        }
+        currList = listName;
+        auxIdx = 0;
+        playSong(getIdxFromId(customLists.get(currList).get(0)));
 
     }
 
@@ -578,6 +575,7 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
             tabLayout.setVisibility(View.VISIBLE);
             viewPager.setVisibility(View.VISIBLE);
+            searchView.setVisibility(View.VISIBLE);
         }
         else moveTaskToBack(true);
     }
