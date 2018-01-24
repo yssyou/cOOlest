@@ -603,7 +603,15 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         SectionsPagerAdapter(FragmentManager fm) { super(fm); }
 
         @Override
-        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
+        public Fragment getItem(int position) {
+            switch (position){
+                case 0: return new FragmentSettings();
+                case 1: return new FragmentList();
+                case 2: return new FragmentSong();
+                case 3: return new FragmentMyLists();
+            }
+            return null;
+        }
 
         @Override
         public int getCount() { return 4; }
@@ -637,26 +645,6 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
                 case 3: return FragmentMyLists.TITLE;
             }
             return super.getPageTitle(position);
-        }
-    }
-
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() { }
-
-        public static Fragment newInstance(int sectionNumber) {
-            switch (sectionNumber){
-                case 1: return new FragmentSettings();
-                case 2: return new FragmentList();
-                case 3: return new FragmentSong();
-                case 4: return new FragmentMyLists();
-            }
-            return null;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
 
