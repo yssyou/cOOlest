@@ -57,7 +57,8 @@ class ListsGridAdapter extends BaseAdapter {
 
         view.setBackground(null);
 
-        if(viewHolder.listTitle.getText().equals(currList))
+        CharSequence title = viewHolder.listTitle.getText();
+        if(title.equals(currList) && !title.equals("+"))
             view.setBackgroundColor(Color.argb(40, 128, 128, 128));
 
         return view;

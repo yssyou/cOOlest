@@ -94,68 +94,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     boolean gotFilePermission = false;
 
-    private class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
-
-        @Override
-        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
-
-        @Override
-        public int getCount() { return 4; }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
-            switch(position){
-                case 0:
-                    settingsFragment = (SettingsFragment) createdFragment;
-                    break;
-                case 1:
-                    listFragment = (ListFragment) createdFragment;
-                    break;
-                case 2:
-                    songFragment = (SongFragment) createdFragment;
-                    break;
-                case 3:
-                    myListsFragment = (MyListsFragment) createdFragment;
-                    break;
-            }
-            return createdFragment;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0: return SettingsFragment.TITLE;
-                case 1: return ListFragment.TITLE;
-                case 2: return SongFragment.TITLE;
-                case 3: return MyListsFragment.TITLE;
-            }
-            return super.getPageTitle(position);
-        }
-    }
-
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() { }
-
-        public static Fragment newInstance(int sectionNumber) {
-            switch (sectionNumber){
-                case 1: return new SettingsFragment();
-                case 2: return new ListFragment();
-                case 3: return new SongFragment();
-                case 4: return new MyListsFragment();
-            }
-            return null;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_main, container, false);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,7 +111,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         searchCloseIcon = searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
 
         SQLiteDB = this.openOrCreateDatabase("Lists", MODE_PRIVATE, null);
-        SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
+        //SQLiteDB.execSQL("DROP TABLE IF EXISTS lists");
         SQLiteDB.execSQL("CREATE TABLE IF NOT EXISTS lists (name VARCHAR, id INTEGER)");
 
         typeFace = Typeface.createFromAsset(getAssets(), "Ubuntu-C.ttf");
@@ -361,8 +299,6 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         customLists = new HashMap<>();
         customLists.put("+", new ArrayList<Long>());
 
-        //adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
-
         try {
             Cursor c = SQLiteDB.rawQuery("SELECT * FROM lists", null);
             int nameIndex = c.getColumnIndex("name");
@@ -429,13 +365,12 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
 
-        //refreshCustomLists();
     }
 
-    public void deleteList(String listToDelete){
+    public void deleteList(String name){
 
-        SQLiteDB.delete("lists", "name"+"='"+listToDelete+"'", null);
-        customLists.remove(listToDelete);
+        SQLiteDB.delete("lists", "name"+"='"+name+"'", null);
+        customLists.remove(name);
         if(myListsFragment!=null) myListsFragment.updateInterface(getSpTheme());
         currList = "MAIN";
 
@@ -451,6 +386,8 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
             tabLayout.setVisibility(View.INVISIBLE);
             viewPager.setVisibility(View.INVISIBLE);
+
+            currList = "MAIN";
 
         } else {
 
@@ -663,12 +600,70 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     public int getCurrentState(){ return currState; }
     public int getCurrentLoop(){ return currLoop; }
     public int getCurrentRand(){ return currRand; }
-    public int getSpTheme(){
-        return sharedPreferences.getInt("theme", 0);
-        //return 0;
-    }
+    public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
     public SongsListAdapter getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
 
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
+
+        @Override
+        public Fragment getItem(int position) { return PlaceholderFragment.newInstance(position + 1); }
+
+        @Override
+        public int getCount() { return 4; }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
+            switch(position){
+                case 0:
+                    settingsFragment = (SettingsFragment) createdFragment;
+                    break;
+                case 1:
+                    listFragment = (ListFragment) createdFragment;
+                    break;
+                case 2:
+                    songFragment = (SongFragment) createdFragment;
+                    break;
+                case 3:
+                    myListsFragment = (MyListsFragment) createdFragment;
+                    break;
+            }
+            return createdFragment;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0: return SettingsFragment.TITLE;
+                case 1: return ListFragment.TITLE;
+                case 2: return SongFragment.TITLE;
+                case 3: return MyListsFragment.TITLE;
+            }
+            return super.getPageTitle(position);
+        }
+    }
+
+    public static class PlaceholderFragment extends Fragment {
+
+        public PlaceholderFragment() { }
+
+        public static Fragment newInstance(int sectionNumber) {
+            switch (sectionNumber){
+                case 1: return new SettingsFragment();
+                case 2: return new ListFragment();
+                case 3: return new SongFragment();
+                case 4: return new MyListsFragment();
+            }
+            return null;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_main, container, false);
+        }
+    }
 
 }

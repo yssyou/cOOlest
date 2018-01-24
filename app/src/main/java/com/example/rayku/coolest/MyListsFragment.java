@@ -63,13 +63,17 @@ public class MyListsFragment extends Fragment{
         listsTitles.addAll(mListener.getCustomLists().keySet());
 
         adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList(), theme);
-
         listsGridView.setAdapter(adapter);
 
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
+                String listName = listsGridView.getItemAtPosition(i).toString();
+                mListener.setList(listName);
+                adapter.select(listName);
+
+                /*
                 if(view.getBackground()==null) {
                     mListener.setList(listsGridView.getItemAtPosition(i).toString());
                     adapter.select(listsGridView.getItemAtPosition(i).toString());
@@ -77,6 +81,7 @@ public class MyListsFragment extends Fragment{
                     mListener.setList("MAIN");
                     adapter.select("MAIN");
                 }
+                */
 
             }
         });
