@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.example.rayku.coolest.MainActivity"
+            android:name="com.example.rayku.coolest.ActivityMain"
             android:windowSoftInputMode="adjustPan">
         </activity>
 

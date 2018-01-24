@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class SongFragment extends Fragment implements View.OnClickListener {
+public class FragmentSong extends Fragment implements View.OnClickListener {
 
     public static final String TITLE = "PLAYBACK";
 

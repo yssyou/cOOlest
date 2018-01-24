@@ -11,12 +11,14 @@ class Song{
         this.title = title;
         this.artist = artist;
         this.duration = duration;
+
     }
 
-    Song(){} // null song for MyListsFragment
+    Song(){} // null song for FragmentMyLists
 
     long getId(){ return id; }
     String getTitle(){return title;}
     String getArtist(){return artist;}
     int getDuration(){ return duration; }
+
 }

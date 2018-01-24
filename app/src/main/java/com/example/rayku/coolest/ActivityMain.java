@@ -3,7 +3,6 @@ package com.example.rayku.coolest;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -16,7 +15,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -33,18 +31,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.anthonycr.grant.PermissionsManager;
-import com.anthonycr.grant.PermissionsResultAction;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.OnFragmentInteractionListener,
-ListFragment.OnFragmentInteractionListener, SongFragment.OnFragmentInteractionListener,
-MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInteractionListener {
+public class ActivityMain extends AppCompatActivity implements FragmentSettings.OnFragmentInteractionListener,
+FragmentList.OnFragmentInteractionListener, FragmentSong.OnFragmentInteractionListener,
+FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInteractionListener {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
@@ -66,14 +61,14 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     int currIdx, auxIdx;
 
     ThreadPoolExecutor threadPoolExecutor;
-    ColorTaskLight colorTaskLight;
-    ColorTaskDark colorTaskDark;
+    TaskColorLight taskColorLight;
+    TaskColorDark taskColorDark;
     SeekBarTask seekBarTask;
 
-    private SettingsFragment settingsFragment;
-    private ListFragment listFragment;
-    private SongFragment songFragment;
-    private MyListsFragment myListsFragment;
+    private FragmentSettings fragmentSettings;
+    private FragmentList fragmentList;
+    private FragmentSong fragmentSong;
+    private FragmentMyLists fragmentMyLists;
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -85,7 +80,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     SQLiteDatabase SQLiteDB;
 
-    SongsListAdapter adapter; // one for the ListFragment and other for the listToNew
+    AdapterSongsList adapter; // one for the FragmentList and other for the listToNew
     SearchView searchView;
     ImageView searchIcon;
     ImageView searchCloseIcon;
@@ -125,7 +120,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         if(songsList.size()>0) {
             setUpMediaBrowserService();
-            adapter = new SongsListAdapter(getApplicationContext(), songsList, typeFace, getSpTheme());
+            adapter = new AdapterSongsList(getApplicationContext(), songsList, typeFace, getSpTheme());
 
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
@@ -162,6 +157,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             int id = c.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
             int mimeType = c.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE);
             int duration = c.getColumnIndex(MediaStore.Audio.Media.DURATION);
+
             do {
                 String currTitle = c.getString(title);
                 String currentArtist = c.getString(artist);
@@ -217,11 +213,11 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             public void onConnected() {
                 super.onConnected();
                 try {
-                    MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(MainActivity.this, mediaBrowserCompat.getSessionToken());
+                    MediaControllerCompat mMediaControllerCompat = new MediaControllerCompat(ActivityMain.this, mediaBrowserCompat.getSessionToken());
                     mMediaControllerCompat.registerCallback(mediaControllerCompatCallback);
 
-                    MediaControllerCompat.setMediaController(MainActivity.this, mMediaControllerCompat);
-                    tpControls = MediaControllerCompat.getMediaController(MainActivity.this).getTransportControls();
+                    MediaControllerCompat.setMediaController(ActivityMain.this, mMediaControllerCompat);
+                    tpControls = MediaControllerCompat.getMediaController(ActivityMain.this).getTransportControls();
 
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -240,21 +236,21 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
                 switch (state.getState()) {
                     case PlaybackStateCompat.STATE_PLAYING: {
                         currState = STATE_PLAYING;
-                        if (listFragment != null) {
-                            listFragment.updateBtnOnPlay();
+                        if (fragmentList != null) {
+                            fragmentList.updateBtnOnPlay();
                         }
-                        if (songFragment != null) {
-                            songFragment.updateBtnOnPlay();
+                        if (fragmentSong != null) {
+                            fragmentSong.updateBtnOnPlay();
                         }
                         break;
                     }
                     case PlaybackStateCompat.STATE_PAUSED: {
                         currState = STATE_PAUSED;
-                        if (listFragment != null) {
-                            listFragment.updateBtnOnPause();
+                        if (fragmentList != null) {
+                            fragmentList.updateBtnOnPause();
                         }
-                        if (songFragment != null) {
-                            songFragment.updateBtnOnPause();
+                        if (fragmentSong != null) {
+                            fragmentSong.updateBtnOnPause();
                         }
                         break;
                     }
@@ -281,8 +277,8 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
                         playPause(null);
                         break;
                     case "sureRefreshIt!":
-                        if (songFragment != null)
-                            songFragment.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
+                        if (fragmentSong != null)
+                            fragmentSong.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
                         break;
                 }
             }
@@ -363,7 +359,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         customLists.put(listTitle, theIDs);
 
-        if(myListsFragment != null) myListsFragment.updateInterface(getSpTheme());
+        if(fragmentMyLists != null) fragmentMyLists.updateInterface(getSpTheme());
 
     }
 
@@ -371,7 +367,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         SQLiteDB.delete("lists", "name"+"='"+name+"'", null);
         customLists.remove(name);
-        if(myListsFragment!=null) myListsFragment.updateInterface(getSpTheme());
+        if(fragmentMyLists !=null) fragmentMyLists.updateInterface(getSpTheme());
         currList = "MAIN";
 
     }
@@ -431,11 +427,11 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         tpControls.playFromUri(trackUri, extras);
         tpControls.play();
 
-        if(listFragment != null) {
-            listFragment.updateInterface(currSong);
+        if(fragmentList != null) {
+            fragmentList.updateInterface(currSong);
         }
-        if(songFragment != null) {
-            songFragment.updateInterface(currSong);
+        if(fragmentSong != null) {
+            fragmentSong.updateInterface(currSong);
         }
     }
 
@@ -482,13 +478,13 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     public void loop(){
         if(currLoop ==LOOPING){
-            if(songFragment != null) {
-                songFragment.updateLoopOnOut();
+            if(fragmentSong != null) {
+                fragmentSong.updateLoopOnOut();
             }
             currLoop = NOT_LOOPING;
         }else{
-            if(songFragment != null) {
-                songFragment.updateLoopOnIn();
+            if(fragmentSong != null) {
+                fragmentSong.updateLoopOnIn();
             }
             currLoop = LOOPING;
         }
@@ -496,13 +492,13 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     public void rand(){
         if(currRand ==RAND){
-            if(songFragment != null) {
-                songFragment.updateRandOnOut();
+            if(fragmentSong != null) {
+                fragmentSong.updateRandOnOut();
             }
             currRand = NOT_RAND;
         }else{
-            if(songFragment != null) {
-                songFragment.updateRandOnIn();
+            if(fragmentSong != null) {
+                fragmentSong.updateRandOnIn();
             }
             currRand = RAND;
         }
@@ -515,8 +511,8 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     @Override
     protected void onPause() {
         super.onPause();
-        if(colorTaskLight !=null) colorTaskLight.killColorTaskLight();
-        if(colorTaskDark !=null) colorTaskDark.killColorTaskDark();
+        if(taskColorLight !=null) taskColorLight.killColorTaskLight();
+        if(taskColorDark !=null) taskColorDark.killColorTaskDark();
     }
 
     @Override
@@ -524,10 +520,10 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         super.onResume();
 
         if(getSpTheme()==1) {
-            colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+            taskColorLight = new TaskColorLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
         }
         if(getSpTheme()==3) {
-            colorTaskDark = new ColorTaskDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
+            taskColorDark = new TaskColorDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
         }
 
         if(gotFilePermission) switchTheme(getSpTheme());
@@ -538,11 +534,11 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         sharedPreferences.edit().putInt("theme", i).apply();
 
-        adapter = new SongsListAdapter(this, songsList, typeFace, getSpTheme());
+        adapter = new AdapterSongsList(this, songsList, typeFace, getSpTheme());
 
-        if(settingsFragment!=null) settingsFragment.updateTheme();
-        if(songFragment!=null) songFragment.updateTheme();
-        if(listFragment!=null) listFragment.updateTheme();
+        if(fragmentSettings !=null) fragmentSettings.updateTheme();
+        if(fragmentSong !=null) fragmentSong.updateTheme();
+        if(fragmentList !=null) fragmentList.updateTheme();
 
         if(i==0 || i==1){
             customizeTabLayout(Color.BLACK);
@@ -553,12 +549,12 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             customizeSearchView(Color.WHITE);
         }
 
-        if(colorTaskLight!=null) {
-            colorTaskLight.killColorTaskLight();
-            colorTaskLight = null; }
-        if(colorTaskDark!=null) {
-            colorTaskDark.killColorTaskDark();
-            colorTaskDark = null; }
+        if(taskColorLight !=null) {
+            taskColorLight.killColorTaskLight();
+            taskColorLight = null; }
+        if(taskColorDark !=null) {
+            taskColorDark.killColorTaskDark();
+            taskColorDark = null; }
 
         if(i==0){
             bg1.setBackgroundColor(Color.WHITE); bg2.setBackgroundColor(Color.WHITE);
@@ -568,8 +564,8 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             bg1.setBackgroundColor(Color.BLACK); bg2.setBackgroundColor(Color.BLACK);
             bg3.setBackgroundColor(Color.BLACK); bg4.setBackgroundColor(Color.BLACK);
         }
-        if(i==1) colorTaskLight = new ColorTaskLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-        if(i==3) colorTaskDark = new ColorTaskDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
+        if(i==1) taskColorLight = new TaskColorLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
+        if(i==3) taskColorDark = new TaskColorDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
 
     }
 
@@ -601,7 +597,7 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     public int getCurrentLoop(){ return currLoop; }
     public int getCurrentRand(){ return currRand; }
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
-    public SongsListAdapter getAdapter(){ return adapter; }
+    public AdapterSongsList getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -619,16 +615,16 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
             Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
             switch(position){
                 case 0:
-                    settingsFragment = (SettingsFragment) createdFragment;
+                    fragmentSettings = (FragmentSettings) createdFragment;
                     break;
                 case 1:
-                    listFragment = (ListFragment) createdFragment;
+                    fragmentList = (FragmentList) createdFragment;
                     break;
                 case 2:
-                    songFragment = (SongFragment) createdFragment;
+                    fragmentSong = (FragmentSong) createdFragment;
                     break;
                 case 3:
-                    myListsFragment = (MyListsFragment) createdFragment;
+                    fragmentMyLists = (FragmentMyLists) createdFragment;
                     break;
             }
             return createdFragment;
@@ -637,10 +633,10 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0: return SettingsFragment.TITLE;
-                case 1: return ListFragment.TITLE;
-                case 2: return SongFragment.TITLE;
-                case 3: return MyListsFragment.TITLE;
+                case 0: return FragmentSettings.TITLE;
+                case 1: return FragmentList.TITLE;
+                case 2: return FragmentSong.TITLE;
+                case 3: return FragmentMyLists.TITLE;
             }
             return super.getPageTitle(position);
         }
@@ -652,10 +648,10 @@ MyListsFragment.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
         public static Fragment newInstance(int sectionNumber) {
             switch (sectionNumber){
-                case 1: return new SettingsFragment();
-                case 2: return new ListFragment();
-                case 3: return new SongFragment();
-                case 4: return new MyListsFragment();
+                case 1: return new FragmentSettings();
+                case 2: return new FragmentList();
+                case 3: return new FragmentSong();
+                case 4: return new FragmentMyLists();
             }
             return null;
         }

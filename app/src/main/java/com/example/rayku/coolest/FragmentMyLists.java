@@ -1,7 +1,6 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,13 +15,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MyListsFragment extends Fragment{
+public class FragmentMyLists extends Fragment{
 
     public static final String TITLE = "MY LISTS";
     private OnFragmentInteractionListener mListener;
 
     ArrayList<String> listsTitles;
-    ListsGridAdapter adapter;
+    AdapterListsGrid adapter;
 
     GridView listsGridView;
     Typeface typeFace;
@@ -62,7 +61,7 @@ public class MyListsFragment extends Fragment{
         listsTitles = new ArrayList<>();
         listsTitles.addAll(mListener.getCustomLists().keySet());
 
-        adapter = new ListsGridAdapter(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList(), theme);
+        adapter = new AdapterListsGrid(getContext(), listsTitles, mListener.getTypeface(), mListener.getCurrList(), theme);
         listsGridView.setAdapter(adapter);
 
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ListFragment extends Fragment implements View.OnClickListener{
+public class FragmentList extends Fragment implements View.OnClickListener{
 
     private OnFragmentInteractionListener mListener;
 
@@ -129,7 +129,7 @@ public class ListFragment extends Fragment implements View.OnClickListener{
         Song getCurrentSong();
         int getCurrentState();
         Typeface getTypeface();
-        SongsListAdapter getAdapter();
+        AdapterSongsList getAdapter();
         int getIdxFromId(long id);
         int getSpTheme();
     }

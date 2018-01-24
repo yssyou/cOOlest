@@ -41,7 +41,7 @@ public class ActivityPermissions extends AppCompatActivity {
                     public void onGranted() {
                         gotPermissions = true;
                         finish();
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        startActivity(new Intent(getApplicationContext(), ActivityMain.class));
                     }
 
                     @Override

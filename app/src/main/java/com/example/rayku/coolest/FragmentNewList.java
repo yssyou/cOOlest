@@ -1,7 +1,6 @@
 package com.example.rayku.coolest;
 
 import android.content.Context;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,7 +23,7 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
 
     ArrayList<Song> songsList;
     ArrayList<Long> theIDs;
-    SongsListAdapter adapter2;
+    AdapterSongsList adapter2;
     ListView listView;
     EditText editText;
     TextView textView;
@@ -66,7 +65,7 @@ public class FragmentNewList extends Fragment implements View.OnClickListener{
         songsList = mListener.getSongList();
         theIDs = new ArrayList<>();
 
-        adapter2 = new SongsListAdapter(getContext(), songsList, typeface, spTheme);
+        adapter2 = new AdapterSongsList(getContext(), songsList, typeface, spTheme);
 
         listView.setAdapter(adapter2);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

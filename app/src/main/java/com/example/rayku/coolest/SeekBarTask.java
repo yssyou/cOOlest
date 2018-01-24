@@ -6,14 +6,14 @@ import android.support.v4.media.session.MediaControllerCompat;
 
 public class SeekBarTask extends AsyncTask<MediaControllerCompat.TransportControls, Void, Void>{
 
-    MediaControllerCompat.TransportControls tpControls;
+    private MediaControllerCompat.TransportControls tpControls;
 
     @Override
     protected Void doInBackground(MediaControllerCompat.TransportControls... o) {
         tpControls = o[0];
         while (!isCancelled()) {
             publishProgress();
-            SystemClock.sleep(400);
+            SystemClock.sleep(2000);
         }
         return null;
     }

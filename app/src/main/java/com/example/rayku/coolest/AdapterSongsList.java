@@ -1,8 +1,14 @@
 package com.example.rayku.coolest;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +18,10 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.FileDescriptor;
 import java.util.ArrayList;
 
-class SongsListAdapter extends BaseAdapter implements Filterable{
+class AdapterSongsList extends BaseAdapter implements Filterable{
     private Context context;
     private ArrayList<Song> originalData;
     private ArrayList<Song> filteredData;
@@ -22,7 +29,7 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
     private int theme;
     private Boolean[] selected; // to keep track of the colored rows
 
-    SongsListAdapter(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
+    AdapterSongsList(Context context, ArrayList<Song> originalData, Typeface typeFace, int theme){
         this.context = context;
         this.originalData = originalData;
         this.typeFace = typeFace;
@@ -136,6 +143,32 @@ class SongsListAdapter extends BaseAdapter implements Filterable{
     void select(int i, boolean isIt) {
         selected[i] = isIt;
         notifyDataSetChanged();
+    }
+
+
+
+
+    public Bitmap getAlbumart(Long album_id)
+    {
+        Bitmap bm = null;
+        try
+        {
+            final Uri sArtworkUri = Uri
+                    .parse("content://media/external/audio/albumart");
+
+            Uri uri = ContentUris.withAppendedId(sArtworkUri, album_id);
+
+            ParcelFileDescriptor pfd = context.getContentResolver()
+                    .openFileDescriptor(uri, "r");
+
+            if (pfd != null)
+            {
+                FileDescriptor fd = pfd.getFileDescriptor();
+                bm = BitmapFactory.decodeFileDescriptor(fd);
+            }
+        } catch (Exception e) {
+        }
+        return bm;
     }
 
 }

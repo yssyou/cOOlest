@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-class ListsGridAdapter extends BaseAdapter {
+class AdapterListsGrid extends BaseAdapter {
 
     private Context context;
     private Typeface typeFace;
@@ -20,7 +20,7 @@ class ListsGridAdapter extends BaseAdapter {
     private String currList;
     private int theme;
 
-    ListsGridAdapter(Context context, ArrayList<String> listsTitles, Typeface typeFace, String currList, int theme){
+    AdapterListsGrid(Context context, ArrayList<String> listsTitles, Typeface typeFace, String currList, int theme){
         this.context = context;
         this.listsTitles = listsTitles;
         this.typeFace = typeFace;

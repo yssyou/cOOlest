@@ -2,11 +2,11 @@ package com.example.rayku.coolest;
 
 import android.view.View;
 
-class ObjectToColorTask {
+class ObjectToTaskColor {
     private View view1, view2, view3, view4;
     private int delay;
 
-    ObjectToColorTask(View view1, View view2, View view3, View view4, int delay){
+    ObjectToTaskColor(View view1, View view2, View view3, View view4, int delay){
         this.view1 = view1;
         this.view2 = view2;
         this.view3 = view3;

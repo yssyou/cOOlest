@@ -193,6 +193,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
     @Override
     public void onAudioFocusChange(int focusChange) {
         switch( focusChange ){
+
             case AudioManager.AUDIOFOCUS_LOSS: {
                 if(mediaPlayer.isPlaying()){
                     mediaPlayer.stop();
