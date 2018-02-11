@@ -25,7 +25,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.SearchView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -37,9 +36,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ActivityMain extends AppCompatActivity implements FragmentSettings.OnFragmentInteractionListener,
-FragmentList.OnFragmentInteractionListener, FragmentSong.OnFragmentInteractionListener,
-FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInteractionListener {
+public class ActivityMain extends AppCompatActivity implements
+        FragmentList.OnFragmentInteractionListener,
+        FragmentSong.OnFragmentInteractionListener,
+        FragmentMyLists.OnFragmentInteractionListener,
+        FragmentNewList.OnFragmentInteractionListener {
 
     private static final int STATE_PAUSED = 0;
     private static final int STATE_PLAYING = 1;
@@ -61,11 +62,8 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     int currIdx, auxIdx;
 
     ThreadPoolExecutor threadPoolExecutor;
-    TaskColorLight taskColorLight;
-    TaskColorDark taskColorDark;
     SeekBarTask seekBarTask;
 
-    private FragmentSettings fragmentSettings;
     private FragmentList fragmentList;
     private FragmentSong fragmentSong;
     private FragmentMyLists fragmentMyLists;
@@ -73,7 +71,7 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    public View bg1, bg2, bg3, bg4;
+    public View background;
 
     Typeface typeFace;
     SharedPreferences sharedPreferences;
@@ -87,17 +85,12 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
     MediaControllerCompat.Callback mediaControllerCompatCallback;
 
-    boolean gotFilePermission = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bg1 = findViewById(R.id.bg1);
-        bg2 = findViewById(R.id.bg2);
-        bg3 = findViewById(R.id.bg3);
-        bg4 = findViewById(R.id.bg4);
+        background = findViewById(R.id.background);
 
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
@@ -137,11 +130,10 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
 
             SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
             viewPager.setAdapter(sectionsPagerAdapter);
-            viewPager.setCurrentItem(1);
+            viewPager.setCurrentItem(0);
             tabLayout.setupWithViewPager(viewPager);
             customizeTabLayout(Color.BLACK);
         }
-
 
     }
 
@@ -505,64 +497,24 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         tpControls.seekTo(i);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if(taskColorLight !=null) taskColorLight.killColorTaskLight();
-        if(taskColorDark !=null) taskColorDark.killColorTaskDark();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if(getSpTheme()==1) {
-            taskColorLight = new TaskColorLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-        }
-        if(getSpTheme()==3) {
-            taskColorDark = new TaskColorDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
-        }
-
-        if(gotFilePermission) switchTheme(getSpTheme());
-
-    }
-
     public void switchTheme(int i){
 
         sharedPreferences.edit().putInt("theme", i).apply();
 
         adapter = new AdapterSongsList(this, songsList, typeFace, getSpTheme());
 
-        if(fragmentSettings !=null) fragmentSettings.updateTheme();
         if(fragmentSong !=null) fragmentSong.updateTheme();
         if(fragmentList !=null) fragmentList.updateTheme();
 
         if(i==0 || i==1){
             customizeTabLayout(Color.BLACK);
             customizeSearchView(Color.BLACK);
-        }
-        else{
+            background.setBackgroundColor(Color.WHITE);
+        } else {
             customizeTabLayout(Color.WHITE);
             customizeSearchView(Color.WHITE);
+            background.setBackgroundColor(Color.BLACK);
         }
-
-        if(taskColorLight !=null) {
-            taskColorLight.killColorTaskLight();
-            taskColorLight = null; }
-        if(taskColorDark !=null) {
-            taskColorDark.killColorTaskDark();
-            taskColorDark = null; }
-
-        if(i==0){
-            bg1.setBackgroundColor(Color.WHITE); bg2.setBackgroundColor(Color.WHITE);
-            bg3.setBackgroundColor(Color.WHITE); bg4.setBackgroundColor(Color.WHITE);
-        }
-        if(i==2){
-            bg1.setBackgroundColor(Color.BLACK); bg2.setBackgroundColor(Color.BLACK);
-            bg3.setBackgroundColor(Color.BLACK); bg4.setBackgroundColor(Color.BLACK);
-        }
-        if(i==1) taskColorLight = new TaskColorLight(threadPoolExecutor, 3000, 5001, bg1, bg2, bg3, bg4);
-        if(i==3) taskColorDark = new TaskColorDark(threadPoolExecutor, bg1, bg2, bg3, bg4);
 
     }
 
@@ -605,31 +557,27 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         @Override
         public Fragment getItem(int position) {
             switch (position){
-                case 0: return new FragmentSettings();
-                case 1: return new FragmentList();
-                case 2: return new FragmentSong();
-                case 3: return new FragmentMyLists();
+                case 0: return new FragmentList();
+                case 1: return new FragmentSong();
+                case 2: return new FragmentMyLists();
             }
             return null;
         }
 
         @Override
-        public int getCount() { return 4; }
+        public int getCount() { return 3; }
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
             switch(position){
                 case 0:
-                    fragmentSettings = (FragmentSettings) createdFragment;
-                    break;
-                case 1:
                     fragmentList = (FragmentList) createdFragment;
                     break;
-                case 2:
+                case 1:
                     fragmentSong = (FragmentSong) createdFragment;
                     break;
-                case 3:
+                case 2:
                     fragmentMyLists = (FragmentMyLists) createdFragment;
                     break;
             }
@@ -639,13 +587,13 @@ FragmentMyLists.OnFragmentInteractionListener, FragmentNewList.OnFragmentInterac
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0: return FragmentSettings.TITLE;
-                case 1: return FragmentList.TITLE;
-                case 2: return FragmentSong.TITLE;
-                case 3: return FragmentMyLists.TITLE;
+                case 0: return FragmentList.TITLE;
+                case 1: return FragmentSong.TITLE;
+                case 2: return FragmentMyLists.TITLE;
             }
             return super.getPageTitle(position);
         }
     }
+
 
 }

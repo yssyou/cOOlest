@@ -67,12 +67,9 @@ public class FragmentMyLists extends Fragment{
         listsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
                 String listName = listsGridView.getItemAtPosition(i).toString();
                 adapter.select(listName);
                 mListener.setList(listName);
-
-
             }
         });
 
