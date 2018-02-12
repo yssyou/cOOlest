@@ -23,6 +23,7 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -185,29 +186,20 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
                 if(mediaPlayer.isPlaying()){
                     mediaPlayer.stop();
                     mediaSessionCompat.sendSessionEvent("lostAudioFocus", null);
+                    Toast.makeText(this, "AUDIOFOCUS_LOSS", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
                 mediaPlayer.pause();
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+                showPausedNotification();
+                Toast.makeText(this, "AUDIOFOCUS_LOSS_TRANSIENT", Toast.LENGTH_SHORT).show();
                 break;
             }
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
-                if(mediaPlayer != null){
-                    mediaPlayer.setVolume(0.1f, 0.1f);
-                }
-                break;
-            }
-            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE: {
-                if(mediaPlayer != null){
 
-                    if(!mediaPlayer.isPlaying()){
-                        mediaPlayer.start();
-                    }
-                    mediaPlayer.setVolume(1.0f, 1.0f);
-                }
-                break;
-            }
+            // LOSS_TRANSIENT_CAN_DUCK had some issues so it got removed.
+
         }
     }
 

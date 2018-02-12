@@ -20,6 +20,9 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.SearchView;
 import android.view.View;
@@ -117,8 +120,7 @@ public class ActivityMain extends AppCompatActivity implements
 
             refreshCustomLists();
 
-            AdapterSectionsPager adapterSectionsPager = new AdapterSectionsPager(
-                    getSupportFragmentManager(), fragmentList, fragmentSong, fragmentMyLists);
+            AdapterSectionsPager adapterSectionsPager = new AdapterSectionsPager(getSupportFragmentManager());
             viewPager.setAdapter(adapterSectionsPager);
             viewPager.setCurrentItem(0);
             tabLayout.setupWithViewPager(viewPager);
@@ -529,5 +531,50 @@ public class ActivityMain extends AppCompatActivity implements
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
     public AdapterSongsList getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
+
+    private class AdapterSectionsPager extends FragmentPagerAdapter {
+
+        AdapterSectionsPager(FragmentManager fm){ super(fm); }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position){
+                case 0: return new FragmentList();
+                case 1: return new FragmentSong();
+                case 2: return new FragmentMyLists();
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() { return 3; }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
+            switch(position){
+                case 0:
+                    fragmentList = (FragmentList) createdFragment;
+                    break;
+                case 1:
+                    fragmentSong = (FragmentSong) createdFragment;
+                    break;
+                case 2:
+                    fragmentMyLists = (FragmentMyLists) createdFragment;
+                    break;
+            }
+            return createdFragment;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0: return FragmentList.TITLE;
+                case 1: return FragmentSong.TITLE;
+                case 2: return FragmentMyLists.TITLE;
+            }
+            return super.getPageTitle(position);
+        }
+    }
 
 }
