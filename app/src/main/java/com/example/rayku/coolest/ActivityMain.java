@@ -20,9 +20,6 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.SearchView;
 import android.view.View;
@@ -32,9 +29,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ActivityMain extends AppCompatActivity implements
         FragmentList.OnFragmentInteractionListener,
@@ -60,9 +54,6 @@ public class ActivityMain extends AppCompatActivity implements
 
     static Song currSong;
     int currIdx, auxIdx;
-
-    ThreadPoolExecutor threadPoolExecutor;
-    SeekBarTask seekBarTask;
 
     private FragmentList fragmentList;
     private FragmentSong fragmentSong;
@@ -107,8 +98,6 @@ public class ActivityMain extends AppCompatActivity implements
         sharedPreferences = this.getSharedPreferences("com.example.rayku.coolest", Context.MODE_PRIVATE);
         sharedPreferences.edit().putInt("theme", 0).apply();
 
-        threadPoolExecutor = new ThreadPoolExecutor(3, 3, 5000, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(6));
-
         retrieveSongList();
 
         if(songsList.size()>0) {
@@ -128,8 +117,9 @@ public class ActivityMain extends AppCompatActivity implements
 
             refreshCustomLists();
 
-            SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-            viewPager.setAdapter(sectionsPagerAdapter);
+            AdapterSectionsPager adapterSectionsPager = new AdapterSectionsPager(
+                    getSupportFragmentManager(), fragmentList, fragmentSong, fragmentMyLists);
+            viewPager.setAdapter(adapterSectionsPager);
             viewPager.setCurrentItem(0);
             tabLayout.setupWithViewPager(viewPager);
             customizeTabLayout(Color.BLACK);
@@ -268,10 +258,6 @@ public class ActivityMain extends AppCompatActivity implements
                     case "lostAudioFocus":
                         playPause(null);
                         break;
-                    case "sureRefreshIt!":
-                        if (fragmentSong != null)
-                            fragmentSong.refreshSeekBar(extras.getInt("position"), extras.getInt("duration"));
-                        break;
                 }
             }
 
@@ -396,11 +382,6 @@ public class ActivityMain extends AppCompatActivity implements
     }
 
     public void playSong(int i){
-
-        if(seekBarTask == null){
-            seekBarTask = new SeekBarTask();
-            seekBarTask.executeOnExecutor(threadPoolExecutor, tpControls);
-        }
 
         currIdx = i;
         currSong = songsList.get(i);
@@ -536,7 +517,6 @@ public class ActivityMain extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         mediaBrowserCompat.disconnect();
-        threadPoolExecutor.shutdown();
     }
 
     public ArrayList<Song> getSongList() { return songsList; }
@@ -549,51 +529,5 @@ public class ActivityMain extends AppCompatActivity implements
     public int getSpTheme(){ return sharedPreferences.getInt("theme", 0); }
     public AdapterSongsList getAdapter(){ return adapter; }
     public String getCurrList(){ return currList; }
-
-    private class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        SectionsPagerAdapter(FragmentManager fm) { super(fm); }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position){
-                case 0: return new FragmentList();
-                case 1: return new FragmentSong();
-                case 2: return new FragmentMyLists();
-            }
-            return null;
-        }
-
-        @Override
-        public int getCount() { return 3; }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
-            switch(position){
-                case 0:
-                    fragmentList = (FragmentList) createdFragment;
-                    break;
-                case 1:
-                    fragmentSong = (FragmentSong) createdFragment;
-                    break;
-                case 2:
-                    fragmentMyLists = (FragmentMyLists) createdFragment;
-                    break;
-            }
-            return createdFragment;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0: return FragmentList.TITLE;
-                case 1: return FragmentSong.TITLE;
-                case 2: return FragmentMyLists.TITLE;
-            }
-            return super.getPageTitle(position);
-        }
-    }
-
 
 }

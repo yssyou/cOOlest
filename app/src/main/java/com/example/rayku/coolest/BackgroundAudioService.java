@@ -111,19 +111,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             super.onSkipToNext();
             mediaSessionCompat.sendSessionEvent("playNextSong", null);
         }
-
-        @Override
-        public void onCustomAction(String action, Bundle extras) {
-            super.onCustomAction(action, extras);
-            switch(action){
-                case "refreshSeekBarPlz":
-                    Bundle valuableInfo = new Bundle();
-                    valuableInfo.putInt("position", mediaPlayer.getCurrentPosition());
-                    valuableInfo.putInt("duration", mediaPlayer.getDuration());
-                    mediaSessionCompat.sendSessionEvent("sureRefreshIt!", valuableInfo);
-                    break;
-            }
-        }
     };
 
     @Nullable
