@@ -19,12 +19,12 @@ public class FragmentSong extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    View playBtn, prevBtn, nextBtn, loopBtn, randBtn;
-    TextView songSongTitle, songSongArtist;
+    private View playBtn, prevBtn, nextBtn, loopBtn, randBtn;
+    private TextView songSongTitle, songSongArtist;
 
-    SeekBar seekBar;
+    private SeekBar seekBar;
 
-    int currLoopDraw, currLoop_fadedDraw, currNextDraw, currPauseDraw,
+    private int currLoopDraw, currLoop_fadedDraw, currNextDraw, currPauseDraw,
     currPlayDraw, currPrevDraw, currRandDraw, currRand_fadedDraw;
 
 
@@ -202,7 +202,7 @@ public class FragmentSong extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void refreshSeekBar(int progress, int duration){
+    public void refreshSeekBar(int duration, int progress){
         seekBar.setMax(duration);
         seekBar.setProgress(progress);
     }

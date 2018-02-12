@@ -1,5 +1,7 @@
 package com.example.rayku.coolest;
 
+import android.content.BroadcastReceiver;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 
@@ -29,9 +31,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
 public class ActivityMain extends AppCompatActivity implements
         FragmentList.OnFragmentInteractionListener,
@@ -252,13 +259,15 @@ public class ActivityMain extends AppCompatActivity implements
                         playNext(null);
                         break;
                     case "songFinished":
-                        if (currLoop == LOOPING)
-                            playSong(currIdx);
-                        else
-                            playNext(null);
+                        if (currLoop == LOOPING) playSong(currIdx);
+                        else playNext(null);
                         break;
                     case "lostAudioFocus":
                         playPause(null);
+                        break;
+                    case "refreshSeekBar":
+                        if(fragmentSong!=null)
+                            fragmentSong.refreshSeekBar(extras.getInt("duration"), extras.getInt("position"));
                         break;
                 }
             }

@@ -23,10 +23,11 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import io.reactivex.schedulers.Schedulers;
 
 public class BackgroundAudioService extends MediaBrowserServiceCompat
         implements MediaPlayer.OnCompletionListener,
@@ -112,6 +113,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             super.onSkipToNext();
             mediaSessionCompat.sendSessionEvent("playNextSong", null);
         }
+
     };
 
     @Nullable
@@ -140,6 +142,15 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
         initMediaPlayer();
         initMediaSession();
         initNoisyReceiver();
+
+        Bundle extras = new Bundle();
+        io.reactivex.Observable.interval(2, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(aVoid -> {
+                    extras.putInt("duration", mediaPlayer.getDuration());
+                    extras.putInt("position", mediaPlayer.getCurrentPosition());
+                    mediaSessionCompat.sendSessionEvent("refreshSeekBar", extras);
+                });
     }
 
     private void initMediaPlayer(){
@@ -186,7 +197,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
                 if(mediaPlayer.isPlaying()){
                     mediaPlayer.stop();
                     mediaSessionCompat.sendSessionEvent("lostAudioFocus", null);
-                    Toast.makeText(this, "AUDIOFOCUS_LOSS", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
@@ -194,7 +204,6 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
                 mediaPlayer.pause();
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
                 showPausedNotification();
-                Toast.makeText(this, "AUDIOFOCUS_LOSS_TRANSIENT", Toast.LENGTH_SHORT).show();
                 break;
             }
 
