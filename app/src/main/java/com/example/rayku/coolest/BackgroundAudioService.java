@@ -27,6 +27,9 @@ import android.text.TextUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class BackgroundAudioService extends MediaBrowserServiceCompat
@@ -35,6 +38,8 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
 
     private MediaPlayer mediaPlayer;
     private MediaSessionCompat mediaSessionCompat;
+
+    private Disposable disposable;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver(){
         @Override
@@ -144,7 +149,8 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
         initNoisyReceiver();
 
         Bundle extras = new Bundle();
-        io.reactivex.Observable.interval(2, TimeUnit.SECONDS)
+
+        disposable = Observable.interval(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(aVoid -> {
                     extras.putInt("duration", mediaPlayer.getDuration());
@@ -271,6 +277,9 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
         unregisterReceiver(broadcastReceiver);
         mediaSessionCompat.release();
         NotificationManagerCompat.from(this).cancel(1);
+
+        disposable.dispose();
+
     }
 
     private void initMediaSessionMetadata(String title, String artist) {
