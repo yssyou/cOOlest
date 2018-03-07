@@ -9,9 +9,9 @@ class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     Fragment[] fragments;
 
-    SectionsPagerAdapter(FragmentManager fm, Fragment[] fragments){
+    SectionsPagerAdapter(FragmentManager fm){
         super(fm);
-        this.fragments = fragments;
+        fragments = new Fragment[3];
     }
 
     @Override
@@ -39,7 +39,7 @@ class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
-        return fragments[position];
+        return super.instantiateItem(container, position);
     }
 
     @Override

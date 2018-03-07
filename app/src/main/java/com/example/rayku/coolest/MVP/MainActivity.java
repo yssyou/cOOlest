@@ -12,11 +12,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.example.rayku.coolest.R;
+import com.example.rayku.coolest.root.App;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityMVP{
+
+    @Inject
+    MainActivityMVP.Presenter presenter;
 
     @BindView(R.id.background)
     ImageView background;
@@ -41,17 +47,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        Fragment[] fragments = new Fragment[3];
+        ((App)getApplication()).getComponent().inject(this);
 
-        fragments[0] = new ListFragment();
-        fragments[1] = new SongFragment();
-        fragments[2] = new MyListsFragment();
-
-        adapter = new SectionsPagerAdapter(getSupportFragmentManager(), fragments);
+        adapter = new SectionsPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(0);
         tabLayout.setupWithViewPager(viewPager);
-
 
     }
 
