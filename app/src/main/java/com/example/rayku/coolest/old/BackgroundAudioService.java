@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.old;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -23,6 +23,8 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+
+import com.example.rayku.coolest.R;
 
 import java.io.IOException;
 import java.util.List;
@@ -65,6 +67,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
             } catch (Exception startingProgramException){
                 startingProgramException.printStackTrace();
             }
+
             mediaPlayer.start();
         }
 
@@ -97,7 +100,7 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
 
             try {
                 mediaPlayer.prepare();
-            } catch(IOException e) { e.printStackTrace(); }
+            } catch(Exception e) { e.printStackTrace(); }
 
         }
 
@@ -153,10 +156,21 @@ public class BackgroundAudioService extends MediaBrowserServiceCompat
         disposable = Observable.interval(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(aVoid -> {
-                    extras.putInt("duration", mediaPlayer.getDuration());
-                    extras.putInt("position", mediaPlayer.getCurrentPosition());
+
+                    int duration = 0;
+                    int position = 0;
+                    try{
+                        duration = mediaPlayer.getDuration(); // this is where the player tends to fail. Added a try/catch expecting an illegalstateexception
+                        position = mediaPlayer.getCurrentPosition(); // works :D
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    extras.putInt("duration", duration);
+                    extras.putInt("position", position);
                     mediaSessionCompat.sendSessionEvent("refreshSeekBar", extras);
                 });
+
     }
 
     private void initMediaPlayer(){

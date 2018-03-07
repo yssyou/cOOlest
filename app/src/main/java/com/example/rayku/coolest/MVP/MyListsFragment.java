@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.MVP;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -12,10 +12,12 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.example.rayku.coolest.R;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FragmentMyLists extends Fragment{
+public class MyListsFragment extends Fragment{
 
     public static final String TITLE = "MY LISTS";
     private OnFragmentInteractionListener mListener;

@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.MVP;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.rayku.coolest.R;
 
 import java.util.ArrayList;
 

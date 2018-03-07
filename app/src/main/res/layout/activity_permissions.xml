@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.rayku.coolest.ActivityPermissions"
+    tools:context="com.example.rayku.coolest.old.ActivityPermissions"
     android:gravity="center">
 
     <TextView

@@ -13,11 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.example.rayku.coolest.ActivityMain"
+            android:name="com.example.rayku.coolest.MVP.MainActivity"
             android:windowSoftInputMode="adjustPan">
         </activity>
 
-        <activity android:name=".ActivityPermissions">
+        <activity android:name=".MVP.PermissionsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -26,7 +26,7 @@
         </activity>
 
 
-        <service android:name="com.example.rayku.coolest.BackgroundAudioService">
+        <service android:name="com.example.rayku.coolest.old.BackgroundAudioService">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />

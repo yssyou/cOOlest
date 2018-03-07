@@ -1,20 +1,22 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.MVP;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
+
 import com.anthonycr.grant.PermissionsManager;
 import com.anthonycr.grant.PermissionsResultAction;
+import com.example.rayku.coolest.R;
 
-public class ActivityPermissions extends AppCompatActivity {
+public class PermissionsActivity extends AppCompatActivity {
 
     private boolean gotPermissions = false;
     private String[] requiredPermissions = new String[]{
             Manifest.permission.WAKE_LOCK,
-            android.Manifest.permission.READ_EXTERNAL_STORAGE};
+            Manifest.permission.READ_EXTERNAL_STORAGE};
 
     @Override
     protected void onStart() {
@@ -41,7 +43,7 @@ public class ActivityPermissions extends AppCompatActivity {
                     public void onGranted() {
                         gotPermissions = true;
                         finish();
-                        startActivity(new Intent(getApplicationContext(), ActivityMain.class));
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     }
 
                     @Override

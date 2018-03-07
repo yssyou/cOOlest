@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.old;
 
 class Song{
     private long id;
@@ -16,7 +16,7 @@ class Song{
 
     }
 
-    Song(){} // null song for FragmentMyLists
+    Song(){} // null song for MyListsFragment
 
     long getId(){ return id; }
     String getTitle(){return title;}

@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.MVP;
 
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;

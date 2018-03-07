@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.old;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.example.rayku.coolest.R;
 
 import java.util.ArrayList;
 

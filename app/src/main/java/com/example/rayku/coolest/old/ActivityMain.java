@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.old;
 
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -28,6 +28,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.rayku.coolest.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -464,7 +466,7 @@ public class ActivityMain extends AppCompatActivity implements
     }
 
     public void rand(){
-        if(currRand ==RAND){
+        if(currRand == RAND){
             if(fragmentSong != null) {
                 fragmentSong.updateRandOnOut();
             }

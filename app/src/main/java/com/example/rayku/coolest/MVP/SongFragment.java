@@ -1,4 +1,4 @@
-package com.example.rayku.coolest;
+package com.example.rayku.coolest.MVP;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class FragmentSong extends Fragment implements View.OnClickListener {
+import com.example.rayku.coolest.R;
+
+public class SongFragment extends Fragment implements View.OnClickListener {
 
     public static final String TITLE = "PLAYBACK";
 
